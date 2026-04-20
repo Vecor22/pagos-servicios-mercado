@@ -1,4 +1,4 @@
-package com.mercado.pagos.servicios.model;
+package com.mercado.pagos.servicios.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
