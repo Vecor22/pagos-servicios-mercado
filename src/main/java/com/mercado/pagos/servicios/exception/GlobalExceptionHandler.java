@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -26,13 +27,13 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request, null);
     }
 
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiErrorResponse> handleBadRequest(
-            BadRequestException exception,
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateResource(
+            DuplicateResourceException exception,
             HttpServletRequest request
     ) {
-        log.warn("Solicitud invalida: {}", exception.getMessage());
-        return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request, null);
+        log.warn("Recurso duplicado: {}", exception.getMessage());
+        return buildResponse(HttpStatus.CONFLICT, exception.getMessage(), request, null);
     }
 
     @ExceptionHandler(BusinessRuleException.class)
@@ -41,6 +42,15 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         log.warn("Regla de negocio incumplida: {}", exception.getMessage());
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, exception.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiErrorResponse> handleBadRequest(
+            BadRequestException exception,
+            HttpServletRequest request
+    ) {
+        log.warn("Solicitud invalida: {}", exception.getMessage());
         return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request, null);
     }
 
@@ -56,6 +66,15 @@ public class GlobalExceptionHandler {
 
         log.warn("Errores de validacion en {}: {}", request.getRequestURI(), errors);
         return buildResponse(HttpStatus.BAD_REQUEST, "Error de validacion en la solicitud", request, errors);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthentication(
+            AuthenticationException exception,
+            HttpServletRequest request
+    ) {
+        log.warn("Error de autenticacion: {}", exception.getMessage());
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Credenciales invalidas o token expirado", request, null);
     }
 
     @ExceptionHandler(Exception.class)

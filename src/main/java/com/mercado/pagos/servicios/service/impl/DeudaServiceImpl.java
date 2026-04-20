@@ -3,10 +3,11 @@ package com.mercado.pagos.servicios.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercado.pagos.servicios.dto.request.DeudaRequestDTO;
 import com.mercado.pagos.servicios.dto.response.DeudaResponseDTO;
+import com.mercado.pagos.servicios.exception.BusinessRuleException;
+import com.mercado.pagos.servicios.exception.ResourceNotFoundException;
 import com.mercado.pagos.servicios.model.entity.ConceptoCobro;
 import com.mercado.pagos.servicios.model.entity.Deuda;
 import com.mercado.pagos.servicios.model.entity.Puesto;
-import com.mercado.pagos.servicios.model.entity.Socio;
 import com.mercado.pagos.servicios.model.entity.SocioPuesto;
 import com.mercado.pagos.servicios.model.entity.Usuario;
 import com.mercado.pagos.servicios.model.enums.EstadoDeuda;
@@ -43,11 +44,11 @@ public class DeudaServiceImpl implements DeudaService {
     @Override
     public DeudaResponseDTO crearDeuda(DeudaRequestDTO requestDTO) {
         ConceptoCobro concepto = conceptoCobroRepository.findById(requestDTO.getIdConceptoCobro())
-                .orElseThrow(() -> new IllegalArgumentException("Concepto de cobro no encontrado con id: " + requestDTO.getIdConceptoCobro()));
+                .orElseThrow(() -> new ResourceNotFoundException("Concepto de cobro no encontrado con id: " + requestDTO.getIdConceptoCobro()));
         Puesto puesto = puestoRepository.findById(requestDTO.getIdPuesto())
-                .orElseThrow(() -> new IllegalArgumentException("Puesto no encontrado con id: " + requestDTO.getIdPuesto()));
+                .orElseThrow(() -> new ResourceNotFoundException("Puesto no encontrado con id: " + requestDTO.getIdPuesto()));
         SocioPuesto asignacion = socioPuestoRepository.findByPuestoId(requestDTO.getIdPuesto())
-                .orElseThrow(() -> new IllegalArgumentException("El puesto no tiene un socio asignado"));
+                .orElseThrow(() -> new BusinessRuleException("El puesto no tiene un socio asignado"));
 
         Deuda deuda = objectMapper.convertValue(requestDTO, Deuda.class);
         deuda.setId(null);
@@ -89,9 +90,9 @@ public class DeudaServiceImpl implements DeudaService {
     @Override
     public DeudaResponseDTO exonerarDeuda(Long id, String motivo) {
         Deuda deuda = deudaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Deuda no encontrada con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Deuda no encontrada con id: " + id));
         if (deuda.getEstado() == EstadoDeuda.PAGADA) {
-            throw new IllegalStateException("No se puede exonerar una deuda pagada");
+            throw new BusinessRuleException("No se puede exonerar una deuda pagada");
         }
 
         deuda.setEstado(EstadoDeuda.EXONERADA);
@@ -112,7 +113,7 @@ public class DeudaServiceImpl implements DeudaService {
     private Usuario obtenerUsuarioSistema() {
         return usuarioRepository.findAll().stream()
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No existe un usuario registrado para asociar la operacion"));
+                .orElseThrow(() -> new BusinessRuleException("No existe un usuario registrado para asociar la operacion"));
     }
 
     private DeudaResponseDTO toResponse(Deuda deuda) {

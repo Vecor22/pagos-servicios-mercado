@@ -1,5 +1,6 @@
 package com.mercado.pagos.servicios.service.impl;
 
+import com.mercado.pagos.servicios.exception.BusinessRuleException;
 import com.mercado.pagos.servicios.model.entity.Auditoria;
 import com.mercado.pagos.servicios.model.entity.Usuario;
 import com.mercado.pagos.servicios.repository.AuditoriaRepository;
@@ -39,7 +40,7 @@ public class AuditoriaServiceImpl implements AuditoriaService {
     private Usuario obtenerUsuarioSistema() {
         return usuarioRepository.findAll().stream()
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No existe un usuario registrado para asociar la operacion"));
+                .orElseThrow(() -> new BusinessRuleException("No existe un usuario registrado para asociar la operacion"));
     }
 
 }

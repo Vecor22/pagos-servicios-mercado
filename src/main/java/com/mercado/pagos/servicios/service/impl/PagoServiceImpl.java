@@ -3,6 +3,8 @@ package com.mercado.pagos.servicios.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercado.pagos.servicios.dto.request.PagoRequestDTO;
 import com.mercado.pagos.servicios.dto.response.PagoResponseDTO;
+import com.mercado.pagos.servicios.exception.BusinessRuleException;
+import com.mercado.pagos.servicios.exception.ResourceNotFoundException;
 import com.mercado.pagos.servicios.model.entity.Deuda;
 import com.mercado.pagos.servicios.model.entity.Pago;
 import com.mercado.pagos.servicios.model.entity.Usuario;
@@ -36,12 +38,12 @@ public class PagoServiceImpl implements PagoService {
     @Override
     public PagoResponseDTO registrarPago(PagoRequestDTO requestDTO) {
         Deuda deuda = deudaRepository.findById(requestDTO.getIdDeuda())
-                .orElseThrow(() -> new IllegalArgumentException("Deuda no encontrada con id: " + requestDTO.getIdDeuda()));
+                .orElseThrow(() -> new ResourceNotFoundException("Deuda no encontrada con id: " + requestDTO.getIdDeuda()));
         if (deuda.getEstado() != EstadoDeuda.PENDIENTE) {
-            throw new IllegalStateException("Solo se pueden pagar deudas pendientes");
+            throw new BusinessRuleException("Solo se pueden pagar deudas pendientes");
         }
         if (requestDTO.getMontoPagado().compareTo(deuda.getMonto()) != 0) {
-            throw new IllegalArgumentException("El monto pagado debe ser igual al monto de la deuda");
+            throw new BusinessRuleException("El monto pagado debe ser igual al monto de la deuda");
         }
 
         Pago pago = objectMapper.convertValue(requestDTO, Pago.class);
@@ -77,9 +79,9 @@ public class PagoServiceImpl implements PagoService {
     @Override
     public PagoResponseDTO anularPago(Long id, String motivo) {
         Pago pago = pagoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pago no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con id: " + id));
         if (pago.getEstado() == EstadoPago.ANULADO) {
-            throw new IllegalStateException("El pago ya se encuentra anulado");
+            throw new BusinessRuleException("El pago ya se encuentra anulado");
         }
 
         pago.setEstado(EstadoPago.ANULADO);
@@ -104,7 +106,7 @@ public class PagoServiceImpl implements PagoService {
     private Usuario obtenerUsuarioSistema() {
         return usuarioRepository.findAll().stream()
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No existe un usuario registrado para asociar la operacion"));
+                .orElseThrow(() -> new BusinessRuleException("No existe un usuario registrado para asociar la operacion"));
     }
 
     private PagoResponseDTO toResponse(Pago pago) {

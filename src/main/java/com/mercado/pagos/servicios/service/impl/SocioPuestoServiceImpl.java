@@ -3,6 +3,7 @@ package com.mercado.pagos.servicios.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercado.pagos.servicios.dto.request.AsignacionPuestoRequestDTO;
 import com.mercado.pagos.servicios.dto.response.SocioPuestoResponseDTO;
+import com.mercado.pagos.servicios.exception.ResourceNotFoundException;
 import com.mercado.pagos.servicios.model.entity.Puesto;
 import com.mercado.pagos.servicios.model.entity.Socio;
 import com.mercado.pagos.servicios.model.entity.SocioPuesto;
@@ -32,9 +33,9 @@ public class SocioPuestoServiceImpl implements SocioPuestoService {
     @Override
     public SocioPuestoResponseDTO asignarPuesto(AsignacionPuestoRequestDTO requestDTO) {
         Socio socio = socioRepository.findById(requestDTO.getIdSocio())
-                .orElseThrow(() -> new IllegalArgumentException("Socio no encontrado con id: " + requestDTO.getIdSocio()));
+                .orElseThrow(() -> new ResourceNotFoundException("Socio no encontrado con id: " + requestDTO.getIdSocio()));
         Puesto puesto = puestoRepository.findById(requestDTO.getIdPuesto())
-                .orElseThrow(() -> new IllegalArgumentException("Puesto no encontrado con id: " + requestDTO.getIdPuesto()));
+                .orElseThrow(() -> new ResourceNotFoundException("Puesto no encontrado con id: " + requestDTO.getIdPuesto()));
 
         SocioPuesto asignacion = socioPuestoRepository.findByPuestoId(requestDTO.getIdPuesto())
                 .orElseGet(SocioPuesto::new);

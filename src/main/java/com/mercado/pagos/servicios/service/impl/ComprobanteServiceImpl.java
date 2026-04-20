@@ -2,6 +2,9 @@ package com.mercado.pagos.servicios.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercado.pagos.servicios.dto.response.ComprobanteResponseDTO;
+import com.mercado.pagos.servicios.exception.BusinessRuleException;
+import com.mercado.pagos.servicios.exception.DuplicateResourceException;
+import com.mercado.pagos.servicios.exception.ResourceNotFoundException;
 import com.mercado.pagos.servicios.model.entity.Comprobante;
 import com.mercado.pagos.servicios.model.entity.Pago;
 import com.mercado.pagos.servicios.model.enums.EstadoPago;
@@ -32,13 +35,13 @@ public class ComprobanteServiceImpl implements ComprobanteService {
     public ComprobanteResponseDTO generarComprobante(Long idPago) {
         comprobanteRepository.findByPagoId(idPago)
                 .ifPresent(comprobante -> {
-                    throw new IllegalStateException("Ya existe un comprobante para el pago indicado");
+                    throw new DuplicateResourceException("Ya existe un comprobante para el pago indicado");
                 });
 
         Pago pago = pagoRepository.findById(idPago)
-                .orElseThrow(() -> new IllegalArgumentException("Pago no encontrado con id: " + idPago));
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con id: " + idPago));
         if (pago.getEstado() != EstadoPago.REGISTRADO) {
-            throw new IllegalStateException("Solo se puede generar comprobante de un pago registrado");
+            throw new BusinessRuleException("Solo se puede generar comprobante de un pago registrado");
         }
 
         Comprobante comprobante = new Comprobante();
@@ -56,7 +59,7 @@ public class ComprobanteServiceImpl implements ComprobanteService {
     public ComprobanteResponseDTO obtenerComprobantePorPago(Long idPago) {
         return comprobanteRepository.findByPagoId(idPago)
                 .map(this::toResponse)
-                .orElseThrow(() -> new IllegalArgumentException("Comprobante no encontrado para pago id: " + idPago));
+                .orElseThrow(() -> new ResourceNotFoundException("Comprobante no encontrado para pago id: " + idPago));
     }
 
     private String generarNumeroComprobante() {

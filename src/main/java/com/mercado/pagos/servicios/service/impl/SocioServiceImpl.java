@@ -3,6 +3,8 @@ package com.mercado.pagos.servicios.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercado.pagos.servicios.dto.request.SocioRequestDTO;
 import com.mercado.pagos.servicios.dto.response.SocioResponseDTO;
+import com.mercado.pagos.servicios.exception.DuplicateResourceException;
+import com.mercado.pagos.servicios.exception.ResourceNotFoundException;
 import com.mercado.pagos.servicios.model.entity.Socio;
 import com.mercado.pagos.servicios.model.enums.EstadoSocio;
 import com.mercado.pagos.servicios.repository.SocioRepository;
@@ -28,7 +30,7 @@ public class SocioServiceImpl implements SocioService {
     @Override
     public SocioResponseDTO crearSocio(SocioRequestDTO requestDTO) {
         if (socioRepository.existsByDni(requestDTO.getDni())) {
-            throw new IllegalArgumentException("Ya existe un socio con el DNI indicado");
+            throw new DuplicateResourceException("Ya existe un socio con el DNI indicado");
         }
 
         Socio socio = objectMapper.convertValue(requestDTO, Socio.class);
@@ -57,7 +59,7 @@ public class SocioServiceImpl implements SocioService {
     public SocioResponseDTO actualizarSocio(Long id, SocioRequestDTO requestDTO) {
         Socio socio = buscarSocio(id);
         if (!socio.getDni().equals(requestDTO.getDni()) && socioRepository.existsByDni(requestDTO.getDni())) {
-            throw new IllegalArgumentException("Ya existe un socio con el DNI indicado");
+            throw new DuplicateResourceException("Ya existe un socio con el DNI indicado");
         }
 
         socio.setNombres(requestDTO.getNombres());
@@ -83,7 +85,7 @@ public class SocioServiceImpl implements SocioService {
 
     private Socio buscarSocio(Long id) {
         return socioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Socio no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Socio no encontrado con id: " + id));
     }
 
     private String generarCodigoSocio() {
