@@ -86,7 +86,7 @@ public class JwtService {
     private byte[] obtenerBytesSecret() {
         try {
             return Decoders.BASE64.decode(secret);
-        } catch (IllegalArgumentException exception) {
+        } catch (Exception exception) {
             return secret.getBytes(StandardCharsets.UTF_8);
         }
     }
