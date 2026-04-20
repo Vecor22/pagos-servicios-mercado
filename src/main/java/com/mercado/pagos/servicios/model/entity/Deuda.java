@@ -1,4 +1,4 @@
-package com.mercado.pagos.servicios.model;
+package com.mercado.pagos.servicios.model.entity;
 
 import com.mercado.pagos.servicios.model.enums.EstadoDeuda;
 import com.mercado.pagos.servicios.model.enums.TipoGeneracionDeuda;
