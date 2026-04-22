@@ -9,7 +9,13 @@ import java.util.List;
 
 public interface DeudaRepository extends JpaRepository<Deuda, Long> {
 
+    boolean existsByCodigoDeuda(String codigoDeuda);
+
     List<Deuda> findByPuestoId(Long puestoId);
+
+    List<Deuda> findByPuestoCodigoPuesto(String codigoPuesto);
+
+    List<Deuda> findByPuestoCodigoPuestoAndEstado(String codigoPuesto, EstadoDeuda estado);
 
     List<Deuda> findByPuestoIdAndFechaGeneracionBetween(
             Long puestoId,

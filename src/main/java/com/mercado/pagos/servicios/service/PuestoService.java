@@ -8,6 +8,10 @@ public interface PuestoService {
 
     PuestoResponseDTO crearPuesto();
 
+    PuestoResponseDTO obtenerPuestoPorCodigo(String codigoPuesto);
+
     List<PuestoResponseDTO> listarPuestos();
+
+    List<PuestoResponseDTO> listarPuestosPorDniSocio(String dni);
 
 }

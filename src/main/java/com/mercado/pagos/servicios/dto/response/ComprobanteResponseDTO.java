@@ -17,7 +17,11 @@ public class ComprobanteResponseDTO {
 
     private Long id;
     private Long idPago;
+    private String codigoPuesto;
+    private String dniSocio;
+    private String nombreCompletoSocio;
     private String numeroComprobante;
     private String tipoComprobante;
     private LocalDateTime fechaEmision;
+    private String estado;
 }

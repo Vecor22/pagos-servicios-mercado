@@ -9,6 +9,10 @@ public interface ConceptoCobroService {
 
     ConceptoCobroResponseDTO crearConcepto(ConceptoCobroRequestDTO requestDTO);
 
+    ConceptoCobroResponseDTO actualizarConcepto(Long id, ConceptoCobroRequestDTO requestDTO);
+
+    ConceptoCobroResponseDTO obtenerConceptoPorId(Long id);
+
     List<ConceptoCobroResponseDTO> listarConceptos();
 
 }

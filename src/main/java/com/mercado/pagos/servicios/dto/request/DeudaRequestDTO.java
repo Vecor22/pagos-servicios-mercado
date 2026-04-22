@@ -21,14 +21,10 @@ public class DeudaRequestDTO {
     @NotNull
     private Long idConceptoCobro;
 
-    @NotNull
     private Long idPuesto;
 
     @NotNull
-    private Long idSocio;
-
-    @NotNull
-    @DecimalMin(value = "0.01")
+    @DecimalMin(value = "1.00")
     private BigDecimal monto;
 
     @NotNull

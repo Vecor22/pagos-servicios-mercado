@@ -14,6 +14,8 @@ public interface DeudaService {
 
     List<DeudaResponseDTO> listarDeudasPorPuesto(Long idPuesto);
 
+    List<DeudaResponseDTO> listarDeudasPorCodigoPuesto(String codigoPuesto, String estado);
+
     List<DeudaResponseDTO> listarDeudasPorFechas(LocalDateTime inicio, LocalDateTime fin);
 
     DeudaResponseDTO exonerarDeuda(Long id, String motivo);

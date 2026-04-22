@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -39,6 +40,12 @@ public class SocioController {
         return ResponseEntity.ok(socioService.listarSocios());
     }
 
+    @GetMapping("/buscar")
+    public ResponseEntity<List<SocioResponseDTO>> buscarSociosPorNombre(@RequestParam String nombre) {
+        log.info("Solicitud para buscar socios por nombre {}", nombre);
+        return ResponseEntity.ok(socioService.buscarSociosPorNombre(nombre));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<SocioResponseDTO> obtenerSocioPorId(@PathVariable Long id) {
         log.info("Solicitud para obtener socio con id {}", id);
@@ -54,10 +61,13 @@ public class SocioController {
         return ResponseEntity.ok(socioService.actualizarSocio(id, requestDTO));
     }
 
-    @PatchMapping("/{id}/desactivar")
-    public ResponseEntity<SocioResponseDTO> desactivarSocio(@PathVariable Long id) {
-        log.info("Solicitud para desactivar socio con id {}", id);
-        return ResponseEntity.ok(socioService.desactivarSocio(id));
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<SocioResponseDTO> cambiarEstadoSocio(
+            @PathVariable Long id,
+            @RequestParam String estado
+    ) {
+        log.info("Solicitud para cambiar estado del socio con id {} a {}", id, estado);
+        return ResponseEntity.ok(socioService.cambiarEstadoSocio(id, estado));
     }
 
 }

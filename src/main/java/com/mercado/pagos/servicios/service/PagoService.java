@@ -10,7 +10,13 @@ public interface PagoService {
 
     PagoResponseDTO registrarPago(PagoRequestDTO requestDTO);
 
+    PagoResponseDTO obtenerPagoPorId(Long id);
+
+    PagoResponseDTO obtenerPagoPorDeuda(Long idDeuda);
+
     List<PagoResponseDTO> listarPagos();
+
+    List<PagoResponseDTO> listarPagosPorCodigoPuesto(String codigoPuesto);
 
     List<PagoResponseDTO> listarPagosPorFechas(LocalDateTime inicio, LocalDateTime fin);
 

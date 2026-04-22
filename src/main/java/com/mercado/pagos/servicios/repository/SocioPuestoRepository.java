@@ -14,4 +14,6 @@ public interface SocioPuestoRepository extends JpaRepository<SocioPuesto, Long> 
 
     List<SocioPuesto> findBySocioId(Long socioId);
 
+    List<SocioPuesto> findBySocioDni(String dni);
+
 }

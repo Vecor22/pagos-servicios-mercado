@@ -1,9 +1,10 @@
 package com.mercado.pagos.servicios.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercado.pagos.servicios.dto.response.PuestoResponseDTO;
+import com.mercado.pagos.servicios.exception.ResourceNotFoundException;
 import com.mercado.pagos.servicios.model.entity.Puesto;
 import com.mercado.pagos.servicios.repository.PuestoRepository;
+import com.mercado.pagos.servicios.repository.SocioPuestoRepository;
 import com.mercado.pagos.servicios.service.PuestoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,22 +22,40 @@ public class PuestoServiceImpl implements PuestoService {
     private static final String CODIGO_PREFIX = "PUESTO-";
 
     private final PuestoRepository puestoRepository;
-    private final ObjectMapper objectMapper;
+    private final SocioPuestoRepository socioPuestoRepository;
 
     @Override
     public PuestoResponseDTO crearPuesto() {
-        Puesto puesto = new Puesto();
-        puesto.setCodigoPuesto(generarCodigoPuesto());
+        Puesto puesto = Puesto.builder()
+                .codigoPuesto(generarCodigoPuesto())
+                .build();
 
         Puesto guardado = puestoRepository.save(puesto);
         log.info("Puesto creado con id {} y codigo {}", guardado.getId(), guardado.getCodigoPuesto());
-        return objectMapper.convertValue(guardado, PuestoResponseDTO.class);
+        return toResponse(guardado);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PuestoResponseDTO obtenerPuestoPorCodigo(String codigoPuesto) {
+        return puestoRepository.findByCodigoPuesto(codigoPuesto)
+                .map(this::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Puesto no encontrado con codigo: " + codigoPuesto));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<PuestoResponseDTO> listarPuestos() {
         return puestoRepository.findAll().stream()
-                .map(puesto -> objectMapper.convertValue(puesto, PuestoResponseDTO.class))
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PuestoResponseDTO> listarPuestosPorDniSocio(String dni) {
+        return socioPuestoRepository.findBySocioDni(dni).stream()
+                .map(asignacion -> toResponse(asignacion.getPuesto()))
                 .toList();
     }
 
@@ -48,6 +67,13 @@ public class PuestoServiceImpl implements PuestoService {
             codigo = CODIGO_PREFIX + String.format("%03d", siguiente);
         }
         return codigo;
+    }
+
+    private PuestoResponseDTO toResponse(Puesto puesto) {
+        return PuestoResponseDTO.builder()
+                .id(puesto.getId())
+                .codigoPuesto(puesto.getCodigoPuesto())
+                .build();
     }
 
 }

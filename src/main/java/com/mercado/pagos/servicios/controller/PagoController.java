@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -41,13 +41,31 @@ public class PagoController {
         return ResponseEntity.ok(pagoService.listarPagos());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<PagoResponseDTO> obtenerPagoPorId(@PathVariable Long id) {
+        log.info("Solicitud para obtener pago con id {}", id);
+        return ResponseEntity.ok(pagoService.obtenerPagoPorId(id));
+    }
+
+    @GetMapping("/puesto/{codigoPuesto}")
+    public ResponseEntity<List<PagoResponseDTO>> listarPagosPorCodigoPuesto(@PathVariable String codigoPuesto) {
+        log.info("Solicitud para listar pagos del puesto {}", codigoPuesto);
+        return ResponseEntity.ok(pagoService.listarPagosPorCodigoPuesto(codigoPuesto));
+    }
+
+    @GetMapping("/deuda/{idDeuda}")
+    public ResponseEntity<PagoResponseDTO> obtenerPagoPorDeuda(@PathVariable Long idDeuda) {
+        log.info("Solicitud para obtener pago de deuda {}", idDeuda);
+        return ResponseEntity.ok(pagoService.obtenerPagoPorDeuda(idDeuda));
+    }
+
     @GetMapping("/fechas")
     public ResponseEntity<List<PagoResponseDTO>> listarPagosPorFechas(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate inicio,
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fin
     ) {
         log.info("Solicitud para listar pagos entre {} y {}", inicio, fin);
-        return ResponseEntity.ok(pagoService.listarPagosPorFechas(inicio, fin));
+        return ResponseEntity.ok(pagoService.listarPagosPorFechas(inicio.atStartOfDay(), fin.atTime(23, 59, 59)));
     }
 
     @PatchMapping("/{id}/anular")

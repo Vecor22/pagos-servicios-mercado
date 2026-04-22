@@ -11,10 +11,12 @@ public interface SocioService {
 
     List<SocioResponseDTO> listarSocios();
 
+    List<SocioResponseDTO> buscarSociosPorNombre(String nombre);
+
     SocioResponseDTO obtenerSocioPorId(Long id);
 
     SocioResponseDTO actualizarSocio(Long id, SocioRequestDTO requestDTO);
 
-    SocioResponseDTO desactivarSocio(Long id);
+    SocioResponseDTO cambiarEstadoSocio(Long id, String estado);
 
 }

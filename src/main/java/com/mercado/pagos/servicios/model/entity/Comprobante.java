@@ -1,5 +1,6 @@
 package com.mercado.pagos.servicios.model.entity;
 
+import com.mercado.pagos.servicios.model.enums.EstadoComprobante;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,5 +32,9 @@ public class Comprobante {
 
     @Column(name = "fecha_emision", nullable = false)
     private LocalDateTime fechaEmision;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false, length = 20)
+    private EstadoComprobante estado;
 
 }

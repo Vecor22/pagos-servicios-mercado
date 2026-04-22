@@ -24,6 +24,8 @@ public class DeudaResponseDTO {
     private String codigoPuesto;
     private Long idSocio;
     private String nombreCompletoSocio;
+    private Long idDeudaOrigen;
+    private String codigoDeudaOrigen;
     private BigDecimal monto;
     private String tipoGeneracion;
     private String estado;

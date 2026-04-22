@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -47,13 +47,22 @@ public class DeudaController {
         return ResponseEntity.ok(deudaService.listarDeudasPorPuesto(idPuesto));
     }
 
+    @GetMapping("/puesto/codigo/{codigoPuesto}")
+    public ResponseEntity<List<DeudaResponseDTO>> listarDeudasPorCodigoPuesto(
+            @PathVariable String codigoPuesto,
+            @RequestParam(required = false) String estado
+    ) {
+        log.info("Solicitud para listar deudas del puesto {} con estado {}", codigoPuesto, estado);
+        return ResponseEntity.ok(deudaService.listarDeudasPorCodigoPuesto(codigoPuesto, estado));
+    }
+
     @GetMapping("/fechas")
     public ResponseEntity<List<DeudaResponseDTO>> listarDeudasPorFechas(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate inicio,
+            @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fin
     ) {
         log.info("Solicitud para listar deudas entre {} y {}", inicio, fin);
-        return ResponseEntity.ok(deudaService.listarDeudasPorFechas(inicio, fin));
+        return ResponseEntity.ok(deudaService.listarDeudasPorFechas(inicio.atStartOfDay(), fin.atTime(23, 59, 59)));
     }
 
     @PatchMapping("/{id}/exonerar")

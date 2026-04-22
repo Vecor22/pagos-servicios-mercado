@@ -1,8 +1,8 @@
 package com.mercado.pagos.servicios.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercado.pagos.servicios.dto.request.SocioRequestDTO;
 import com.mercado.pagos.servicios.dto.response.SocioResponseDTO;
+import com.mercado.pagos.servicios.exception.BusinessRuleException;
 import com.mercado.pagos.servicios.exception.DuplicateResourceException;
 import com.mercado.pagos.servicios.exception.ResourceNotFoundException;
 import com.mercado.pagos.servicios.model.entity.Socio;
@@ -25,7 +25,6 @@ public class SocioServiceImpl implements SocioService {
     private static final String CODIGO_PREFIX = "SOCIO-";
 
     private final SocioRepository socioRepository;
-    private final ObjectMapper objectMapper;
 
     @Override
     public SocioResponseDTO crearSocio(SocioRequestDTO requestDTO) {
@@ -33,10 +32,15 @@ public class SocioServiceImpl implements SocioService {
             throw new DuplicateResourceException("Ya existe un socio con el DNI indicado");
         }
 
-        Socio socio = objectMapper.convertValue(requestDTO, Socio.class);
-        socio.setId(null);
-        socio.setCodigoSocio(generarCodigoSocio());
-        socio.setEstado(parseEstado(requestDTO.getEstado()));
+        Socio socio = Socio.builder()
+                .codigoSocio(generarCodigoSocio())
+                .nombres(requestDTO.getNombres())
+                .apellidos(requestDTO.getApellidos())
+                .dni(requestDTO.getDni())
+                .telefono(requestDTO.getTelefono())
+                .correo(requestDTO.getCorreo())
+                .estado(parseEstado(requestDTO.getEstado()))
+                .build();
 
         Socio guardado = socioRepository.save(socio);
         log.info("Socio creado con id {} y codigo {}", guardado.getId(), guardado.getCodigoSocio());
@@ -46,6 +50,13 @@ public class SocioServiceImpl implements SocioService {
     @Override
     public List<SocioResponseDTO> listarSocios() {
         return socioRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<SocioResponseDTO> buscarSociosPorNombre(String nombre) {
+        return socioRepository.findByNombresContainingIgnoreCaseOrApellidosContainingIgnoreCase(nombre, nombre).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -75,11 +86,16 @@ public class SocioServiceImpl implements SocioService {
     }
 
     @Override
-    public SocioResponseDTO desactivarSocio(Long id) {
+    public SocioResponseDTO cambiarEstadoSocio(Long id, String estado) {
         Socio socio = buscarSocio(id);
-        socio.setEstado(EstadoSocio.INACTIVO);
+        EstadoSocio nuevoEstado = parseEstado(estado);
+        if (socio.getEstado() == nuevoEstado) {
+            throw new BusinessRuleException("El socio ya se encuentra en estado " + nuevoEstado.name());
+        }
+
+        socio.setEstado(nuevoEstado);
         Socio actualizado = socioRepository.save(socio);
-        log.info("Socio desactivado con id {}", actualizado.getId());
+        log.info("Estado del socio con id {} cambiado a {}", actualizado.getId(), nuevoEstado);
         return toResponse(actualizado);
     }
 
@@ -103,7 +119,16 @@ public class SocioServiceImpl implements SocioService {
     }
 
     private SocioResponseDTO toResponse(Socio socio) {
-        return objectMapper.convertValue(socio, SocioResponseDTO.class);
+        return SocioResponseDTO.builder()
+                .id(socio.getId())
+                .codigoSocio(socio.getCodigoSocio())
+                .nombres(socio.getNombres())
+                .apellidos(socio.getApellidos())
+                .dni(socio.getDni())
+                .telefono(socio.getTelefono())
+                .correo(socio.getCorreo())
+                .estado(socio.getEstado().name())
+                .build();
     }
 
 }
