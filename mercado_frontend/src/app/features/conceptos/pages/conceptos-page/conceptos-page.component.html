@@ -1,0 +1,128 @@
+<section class="conceptos-page">
+  <header class="page-header">
+    <div>
+      <span class="section-label">Modulo administrativo</span>
+      <h1 class="page-title">Conceptos de cobro</h1>
+      <p class="muted">Define los conceptos que se usaran para generar deudas y cobros.</p>
+    </div>
+    <button class="primary-button" type="button" (click)="resetForm()">
+      <span aria-hidden="true">+</span>
+      Nuevo concepto
+    </button>
+  </header>
+
+  @if (successMessage) {
+    <div class="alert alert-success" role="status">{{ successMessage }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error" role="alert">{{ errorMessage }}</div>
+  }
+
+  <div class="conceptos-grid">
+    <section class="list-panel" aria-labelledby="conceptos-list-title">
+      <div class="panel-heading">
+        <div>
+          <h2 id="conceptos-list-title">Listado de conceptos</h2>
+          <span>{{ conceptos.length }} registro(s)</span>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Concepto</th>
+              <th>Tipo</th>
+              <th class="actions-col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (isLoading) {
+              <tr>
+                <td colspan="4" class="empty-cell">Cargando conceptos...</td>
+              </tr>
+            } @else if (conceptos.length === 0) {
+              <tr>
+                <td colspan="4" class="empty-cell">No hay conceptos para mostrar.</td>
+              </tr>
+            } @else {
+              @for (concepto of conceptos; track concepto.id) {
+                <tr>
+                  <td class="id-cell">#{{ concepto.id }}</td>
+                  <td>
+                    <strong>{{ concepto.nombre }}</strong>
+                    <span>{{ concepto.descripcion || 'Sin descripcion' }}</span>
+                  </td>
+                  <td>
+                    <span class="type-badge" [class.consumo]="concepto.tipoCobro === 'CONSUMO'">
+                      {{ concepto.tipoCobro }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="ghost-button compact" type="button" (click)="edit(concepto)" [disabled]="isLoading">
+                      Editar
+                    </button>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="form-panel" aria-labelledby="concepto-form-title">
+      <div class="panel-heading">
+        <div>
+          <h2 id="concepto-form-title">{{ isEditing ? 'Editar concepto' : 'Crear concepto' }}</h2>
+          <span>{{ isEditing ? 'Actualiza los datos del concepto.' : 'Registra un nuevo concepto de cobro.' }}</span>
+        </div>
+      </div>
+
+      <form [formGroup]="conceptoForm" (ngSubmit)="save()" class="concepto-form" novalidate>
+        <div class="form-field">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" type="text" formControlName="nombre" maxlength="100">
+          <span class="field-error">
+            @if (hasControlError('nombre') || fieldErrors['nombre']) {
+              {{ getControlMessage('nombre') }}
+            }
+          </span>
+        </div>
+
+        <div class="form-field">
+          <label for="tipoCobro">Tipo de cobro</label>
+          <select id="tipoCobro" formControlName="tipoCobro">
+            @for (tipo of tiposCobro; track tipo) {
+              <option [value]="tipo">{{ tipo }}</option>
+            }
+          </select>
+          <span class="field-error">
+            @if (hasControlError('tipoCobro') || fieldErrors['tipoCobro']) {
+              {{ getControlMessage('tipoCobro') }}
+            }
+          </span>
+        </div>
+
+        <div class="form-field">
+          <label for="descripcion">Descripcion</label>
+          <textarea id="descripcion" formControlName="descripcion" maxlength="255" rows="4"></textarea>
+          <span class="field-error">
+            @if (hasControlError('descripcion') || fieldErrors['descripcion']) {
+              {{ getControlMessage('descripcion') }}
+            }
+          </span>
+        </div>
+
+        <div class="form-actions">
+          <button class="primary-button" type="submit" [disabled]="isSaving">
+            {{ isSaving ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+          </button>
+          <button class="ghost-button" type="button" (click)="resetForm()" [disabled]="isSaving">Cancelar</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</section>

@@ -1,0 +1,345 @@
+<section class="deudas-page">
+  <header class="page-header">
+    <div>
+      <span class="section-label">Modulo financiero</span>
+      <h1 class="page-title">Deudas</h1>
+      <p class="muted">Registra, consulta y exonera deudas generadas para los puestos del mercado.</p>
+    </div>
+  </header>
+
+  @if (successMessage) {
+    <div class="alert alert-success" role="status">{{ successMessage }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error" role="alert">{{ errorMessage }}</div>
+  }
+
+  <div class="top-grid">
+    <section class="form-panel" aria-labelledby="deuda-form-title">
+      <div class="panel-heading">
+        <h2 id="deuda-form-title">Registrar deuda</h2>
+        <span>Para deuda individual, indica el codigo del puesto asignado.</span>
+      </div>
+
+      <form [formGroup]="deudaForm" (ngSubmit)="save()" class="deuda-form" novalidate>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="nombreConceptoCobro">Concepto</label>
+            <select id="nombreConceptoCobro" formControlName="nombreConceptoCobro">
+              <option value="">Selecciona un concepto</option>
+              @for (concepto of conceptos; track concepto.id) {
+                <option [value]="concepto.nombre">{{ concepto.nombre }}</option>
+              }
+            </select>
+            <span class="field-error">
+              @if (hasDeudaError('nombreConceptoCobro') || fieldErrors['nombreConceptoCobro']) {
+                {{ getFieldMessage('nombreConceptoCobro') }}
+              }
+            </span>
+          </div>
+
+          <div class="form-field">
+            <label for="codigoPuesto">Codigo puesto</label>
+            <input id="codigoPuesto" type="text" formControlName="codigoPuesto" maxlength="20" placeholder="PUESTO-001">
+            <span class="field-error">
+              @if (hasDeudaError('codigoPuesto') || fieldErrors['codigoPuesto']) {
+                {{ getFieldMessage('codigoPuesto') }}
+              }
+            </span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="monto">Monto</label>
+            <input id="monto" type="number" formControlName="monto" min="1" step="0.01">
+            <span class="field-error">
+              @if (hasDeudaError('monto') || fieldErrors['monto']) {
+                {{ getFieldMessage('monto') }}
+              }
+            </span>
+          </div>
+
+          <div class="form-field">
+            <label for="tipoGeneracion">Tipo generacion</label>
+            <select id="tipoGeneracion" formControlName="tipoGeneracion">
+              @for (tipo of tiposGeneracion; track tipo) {
+                <option [value]="tipo">{{ tipo }}</option>
+              }
+            </select>
+            <span class="field-error">
+              @if (hasDeudaError('tipoGeneracion') || fieldErrors['tipoGeneracion']) {
+                {{ getFieldMessage('tipoGeneracion') }}
+              }
+            </span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="observacion">Observacion</label>
+          <textarea id="observacion" formControlName="observacion" maxlength="255" rows="3"></textarea>
+          <span class="field-error">
+            @if (hasDeudaError('observacion') || fieldErrors['observacion']) {
+              {{ getFieldMessage('observacion') }}
+            }
+          </span>
+        </div>
+
+        <div class="form-actions">
+          <button class="primary-button" type="submit" [disabled]="isSaving">
+            {{ isSaving ? 'Registrando...' : 'Registrar deuda' }}
+          </button>
+          <button class="ghost-button" type="button" (click)="resetDeudaForm()" [disabled]="isSaving">Limpiar</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="filters-panel" aria-labelledby="filters-title">
+      <div class="panel-heading">
+        <h2 id="filters-title">Filtros</h2>
+        <span>El filtrado usa uno o varios campos a la vez.</span>
+      </div>
+
+      <form [formGroup]="filtrosForm" class="filters-form" novalidate>
+        <div class="filter-line">
+          <div class="form-field">
+            <label for="filterCodigoPuesto">Codigo puesto</label>
+            <input id="filterCodigoPuesto" type="text" formControlName="codigoPuesto" placeholder="PUESTO-001">
+          </div>
+        </div>
+
+        <div class="filter-line">
+          <div class="form-field">
+            <label for="filterEstado">Estado</label>
+            <select id="filterEstado" formControlName="estado">
+              <option value="">Todos</option>
+              @for (estado of estados; track estado) {
+                <option [value]="estado">{{ estado }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-line">
+          <div class="form-field">
+            <label for="filterInicio">Inicio</label>
+            <input id="filterInicio" type="date" formControlName="inicio">
+          </div>
+          <div class="form-field">
+            <label for="filterFin">Fin</label>
+            <input id="filterFin" type="date" formControlName="fin">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="primary-button" type="button" (click)="filtrar()" [disabled]="isLoading">
+            Filtrar
+          </button>
+          <button class="ghost-button" type="button" (click)="clearFilters()" [disabled]="isLoading">
+            Ver todas
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <section class="list-panel" aria-labelledby="deudas-list-title">
+    <div class="panel-heading">
+      <div>
+        <h2 id="deudas-list-title">Listado de deudas</h2>
+        <span>{{ totalDeudas }} registro(s)</span>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Codigo</th>
+            <th>Concepto</th>
+            <th>Puesto / socio</th>
+            <th>Monto</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading) {
+            <tr>
+              <td colspan="7" class="empty-cell">Cargando deudas...</td>
+            </tr>
+          } @else if (deudas.length === 0) {
+            <tr>
+              <td colspan="7" class="empty-cell">No hay deudas para mostrar.</td>
+            </tr>
+          } @else {
+            @for (deuda of deudas; track deuda.id) {
+              <tr>
+                <td>
+                  <strong class="code-cell">{{ deuda.codigoDeuda }}</strong>
+                  @if (deuda.codigoDeudaOrigen) {
+                    <span>Origen: {{ deuda.codigoDeudaOrigen }}</span>
+                  }
+                </td>
+                <td>
+                  <strong>{{ deuda.nombreConcepto }}</strong>
+                  <span>{{ deuda.tipoGeneracion }}</span>
+                </td>
+                <td>
+                  <strong>{{ deuda.codigoPuesto || 'Sin puesto' }}</strong>
+                  <span>{{ deuda.nombreCompletoSocio || 'Sin socio asociado' }}</span>
+                </td>
+                <td class="amount-cell">{{ formatMoney(deuda.monto) }}</td>
+                <td>
+                  <span class="status-badge" [class]="deuda.estado.toLowerCase()">{{ deuda.estado }}</span>
+                </td>
+                <td>{{ deuda.fechaGeneracion | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button
+                      class="ghost-button compact"
+                      type="button"
+                      (click)="openDetail(deuda)"
+                    >
+                      Ver detalle
+                    </button>
+                  </div>
+                  <div class="row-actions">
+                  <button
+                    class="ghost-button compact"
+                    type="button"
+                    (click)="openExonerar(deuda)"
+                  >
+                    Exonerar
+                  </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="pagination-bar" aria-label="Paginacion de deudas">
+        <button class="ghost-button compact" type="button" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 0 || isLoading">
+          Anterior
+        </button>
+        <div class="pagination-pages">
+          @for (page of pageNumbers; track page) {
+            <button
+              class="pagination-page"
+              type="button"
+              [class.active]="page === currentPage"
+              (click)="changePage(page)"
+              [disabled]="isLoading"
+            >
+              {{ page + 1 }}
+            </button>
+          }
+        </div>
+        <button class="ghost-button compact" type="button" (click)="changePage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1 || isLoading">
+          Siguiente
+        </button>
+      </div>
+    }
+  </section>
+
+  @if (selectedDetailDeuda) {
+    <div class="modal-backdrop" role="presentation" (click)="closeDetail()">
+      <section class="modal-panel" aria-labelledby="detail-title" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="panel-heading modal-heading">
+          <div>
+            <h2 id="detail-title">Detalle de deuda</h2>
+            <span>{{ selectedDetailDeuda.codigoDeuda }}</span>
+          </div>
+          <button class="ghost-button compact" type="button" (click)="closeDetail()">Cerrar</button>
+        </div>
+        <div class="detail-list">
+          <div class="detail-row"><strong>Codigo:</strong><span>{{ selectedDetailDeuda.codigoDeuda }}</span></div>
+          <div class="detail-row"><strong>Concepto:</strong><span>{{ selectedDetailDeuda.nombreConcepto }}</span></div>
+          <div class="detail-row"><strong>Codigo de puesto:</strong><span>{{ selectedDetailDeuda.codigoPuesto || 'Sin puesto' }}</span></div>
+          <div class="detail-row"><strong>Socio asignado:</strong><span>{{ selectedDetailDeuda.nombreCompletoSocio || 'Sin socio asociado' }}</span></div>
+          <div class="detail-row"><strong>Monto:</strong><span>{{ formatMoney(selectedDetailDeuda.monto) }}</span></div>
+          <div class="detail-row"><strong>Estado:</strong><span>{{ selectedDetailDeuda.estado }}</span></div>
+          <div class="detail-row"><strong>Tipo de generacion:</strong><span>{{ selectedDetailDeuda.tipoGeneracion }}</span></div>
+          <div class="detail-row"><strong>Fecha de generacion:</strong><span>{{ selectedDetailDeuda.fechaGeneracion | date: 'dd/MM/yyyy HH:mm' }}</span></div>
+          <div class="detail-row"><strong>Deuda origen:</strong><span>{{ selectedDetailDeuda.codigoDeudaOrigen || 'No aplica' }}</span></div>
+          <div class="detail-row"><strong>Observacion:</strong><span>{{ selectedDetailDeuda.observacion || 'Sin observacion' }}</span></div>
+          <div class="detail-row"><strong>Creado por:</strong><span>{{ selectedDetailDeuda.creadoPorUsername || 'No disponible' }}</span></div>
+          <div class="detail-row"><strong>Actualizado por:</strong><span>{{ selectedDetailDeuda.actualizadoPorUsername || 'No actualizado' }}</span></div>
+          <div class="detail-row"><strong>Fecha de actualizacion:</strong><span>{{ selectedDetailDeuda.fechaActualizacion ? (selectedDetailDeuda.fechaActualizacion | date: 'dd/MM/yyyy HH:mm') : 'No actualizada' }}</span></div>
+          <div class="detail-row"><strong>Exonerado por:</strong><span>{{ selectedDetailDeuda.exoneradoPorUsername || 'No aplica' }}</span></div>
+          <div class="detail-row"><strong>Fecha de exoneracion:</strong><span>{{ selectedDetailDeuda.fechaExoneracion ? (selectedDetailDeuda.fechaExoneracion | date: 'dd/MM/yyyy HH:mm') : 'No aplica' }}</span></div>
+          <div class="detail-row"><strong>Motivo de exoneracion:</strong><span>{{ selectedDetailDeuda.motivoExoneracion || 'No aplica' }}</span></div>
+        </div>
+      </section>
+    </div>
+  }
+
+  @if (selectedDeuda) {
+    <div class="modal-backdrop" role="presentation" (click)="cancelExonerar()">
+      <section class="modal-panel" aria-labelledby="exonerar-title" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="panel-heading modal-heading">
+          <div>
+            <h2 id="exonerar-title">Exonerar deuda</h2>
+            <span>{{ selectedDeuda.codigoDeuda }}</span>
+          </div>
+          <button class="ghost-button compact" type="button" (click)="cancelExonerar()" [disabled]="isExonerating">Cerrar</button>
+        </div>
+
+        <form [formGroup]="exonerarForm" (ngSubmit)="exonerar()" class="detail-list" novalidate>
+          <div class="detail-row">
+            <strong>Deuda:</strong>
+            <span>{{ selectedDeuda.codigoDeuda }}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Concepto:</strong>
+            <span>{{ selectedDeuda.nombreConcepto }}</span>
+          </div>
+          <div class="form-field">
+            <label for="motivo">Motivo de exoneracion</label>
+            <input id="motivo" type="text" formControlName="motivo" maxlength="255">
+            <span class="field-error">
+              @if (exonerarForm.controls.motivo.invalid && (exonerarForm.controls.motivo.dirty || exonerarForm.controls.motivo.touched)) {
+                El motivo es obligatorio.
+              }
+            </span>
+          </div>
+
+          <div class="form-actions">
+            <button class="primary-button" type="submit" [disabled]="isExonerating">
+              {{ isExonerating ? 'Exonerando...' : 'Confirmar exoneracion' }}
+            </button>
+            <button class="ghost-button" type="button" (click)="cancelExonerar()" [disabled]="isExonerating">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  }
+
+  @if (exonerarBlockedMessage) {
+    <div class="modal-backdrop" role="presentation" (click)="closeExonerarBlockedMessage()">
+      <section class="modal-panel" aria-labelledby="exonerar-blocked-title" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="panel-heading modal-heading">
+          <div>
+            <h2 id="exonerar-blocked-title">No se puede exonerar</h2>
+            <span>La deuda ya fue pagada</span>
+          </div>
+          <button class="ghost-button compact" type="button" (click)="closeExonerarBlockedMessage()">Cerrar</button>
+        </div>
+        <div class="detail-list">
+          <div class="detail-row">
+            <strong>Mensaje:</strong>
+            <span>{{ exonerarBlockedMessage }}</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+</section>

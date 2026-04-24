@@ -1,0 +1,73 @@
+<main class="login-page">
+  <section class="login-panel" aria-labelledby="login-title">
+    <div class="brand-block">
+      <div class="brand-mark" aria-hidden="true">MP</div>
+      <div>
+        <p class="brand-kicker">Gestion de pagos</p>
+        <h1 id="login-title">Mercado Municipal</h1>
+      </div>
+    </div>
+
+    <p class="login-copy">
+      Acceso administrativo para controlar socios, puestos, deudas, pagos y reportes.
+    </p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login-form" novalidate>
+      <div class="form-field">
+        <label for="username">Usuario</label>
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          autocomplete="username"
+          placeholder="Ingrese su usuario"
+        >
+        <span class="field-error">
+          @if (hasError('username')) {
+            El usuario es obligatorio.
+          }
+        </span>
+      </div>
+
+      <div class="form-field">
+        <label for="password">Contrasena</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          placeholder="Ingrese su contrasena"
+        >
+        <span class="field-error">
+          @if (hasError('password')) {
+            La contrasena es obligatoria.
+          }
+        </span>
+      </div>
+
+      @if (errorMessage) {
+        <div class="login-error" role="alert">{{ errorMessage }}</div>
+      }
+
+      <button class="primary-button login-button" type="submit" [disabled]="isSubmitting">
+        <span aria-hidden="true">-></span>
+        {{ isSubmitting ? 'Validando...' : 'Ingresar' }}
+      </button>
+    </form>
+  </section>
+
+  <aside class="login-aside" aria-label="Resumen del sistema">
+    <div class="metric">
+      <strong>JWT</strong>
+      <span>Sesion segura para endpoints protegidos</span>
+    </div>
+    <div class="metric">
+      <strong>Admin</strong>
+      <span>Usuario unico de administracion</span>
+    </div>
+    <div class="metric">
+      <strong>Spring Boot</strong>
+      <span>Backend existente en localhost:8080</span>
+    </div>
+  </aside>
+</main>

@@ -1,0 +1,177 @@
+<section class="asignaciones-page">
+  <header class="page-header">
+    <div>
+      <span class="section-label">Modulo operativo</span>
+      <h1 class="page-title">Asignaciones</h1>
+      <p class="muted">Relaciona puestos disponibles con socios activos y consulta las asignaciones vigentes.</p>
+    </div>
+  </header>
+
+  @if (successMessage) {
+    <div class="alert alert-success" role="status">{{ successMessage }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error" role="alert">{{ errorMessage }}</div>
+  }
+
+  <div class="forms-grid">
+    <section class="form-panel" aria-labelledby="asignar-title">
+      <div class="panel-heading">
+        <h2 id="asignar-title">Asignar puesto</h2>
+        <span>Usa el codigo del socio activo y el codigo del puesto.</span>
+      </div>
+
+      <form [formGroup]="asignarForm" (ngSubmit)="asignar()" class="feature-form" novalidate>
+        <div class="form-field">
+          <label for="asignarSocio">Codigo socio</label>
+          <input id="asignarSocio" type="text" formControlName="codigoSocio" maxlength="20" placeholder="SOCIO-001">
+          <span class="field-error">
+            @if (hasError('asignar', 'codigoSocio') || fieldErrors['codigoSocio']) {
+              {{ getFieldMessage('codigoSocio') }}
+            }
+          </span>
+        </div>
+
+        <div class="form-field">
+          <label for="asignarPuesto">Codigo puesto</label>
+          <input id="asignarPuesto" type="text" formControlName="codigoPuesto" maxlength="20" placeholder="PUESTO-003">
+          <span class="field-error">
+            @if (hasError('asignar', 'codigoPuesto') || fieldErrors['codigoPuesto']) {
+              {{ getFieldMessage('codigoPuesto') }}
+            }
+          </span>
+        </div>
+
+        <button class="primary-button" type="submit" [disabled]="isAssigning">
+          {{ isAssigning ? 'Asignando...' : 'Asignar' }}
+        </button>
+      </form>
+    </section>
+
+    <section class="form-panel" aria-labelledby="reasignar-title">
+      <div class="panel-heading">
+        <h2 id="reasignar-title">Reasignar puesto</h2>
+        <span>Cambia el socio responsable de un puesto ya asignado usando codigos.</span>
+      </div>
+
+      <form [formGroup]="reasignarForm" (ngSubmit)="reasignar()" class="feature-form" novalidate>
+        <div class="form-field">
+          <label for="reasignarPuesto">Codigo puesto</label>
+          <input id="reasignarPuesto" type="text" formControlName="codigoPuesto" maxlength="20" placeholder="PUESTO-003">
+          <span class="field-error">
+            @if (hasError('reasignar', 'codigoPuesto') || fieldErrors['codigoPuesto']) {
+              {{ getFieldMessage('codigoPuesto') }}
+            }
+          </span>
+        </div>
+
+        <div class="form-field">
+          <label for="nuevoSocio">Nuevo codigo socio</label>
+          <input id="nuevoSocio" type="text" formControlName="codigoSocio" maxlength="20" placeholder="SOCIO-002">
+          <span class="field-error">
+            @if (hasError('reasignar', 'codigoSocio') || fieldErrors['codigoSocio']) {
+              {{ getFieldMessage('codigoSocio') }}
+            }
+          </span>
+        </div>
+
+        <button class="primary-button" type="submit" [disabled]="isReassigning">
+          {{ isReassigning ? 'Reasignando...' : 'Reasignar' }}
+        </button>
+      </form>
+    </section>
+
+  </div>
+
+  <section class="form-panel" aria-labelledby="asignaciones-filtros-title">
+    <div class="panel-heading">
+      <h2 id="asignaciones-filtros-title">Buscar asignaciones</h2>
+      <span>Filtra puestos asignados por DNI del socio o por nombre del socio.</span>
+    </div>
+
+    <form [formGroup]="filtrosForm" class="feature-form" novalidate>
+      <div class="form-field">
+        <label for="filtroDniSocio">DNI del socio</label>
+        <input id="filtroDniSocio" type="text" formControlName="dniSocio" maxlength="8" placeholder="12345678">
+      </div>
+
+      <div class="form-field">
+        <label for="filtroNombreSocio">Nombre del socio</label>
+        <input id="filtroNombreSocio" type="text" formControlName="nombreSocio" maxlength="120" placeholder="Juan Perez">
+      </div>
+
+      <div class="form-actions">
+        <button class="primary-button" type="button" (click)="filtrar()" [disabled]="isLoading">Filtrar</button>
+        <button class="ghost-button" type="button" (click)="clearFilters()" [disabled]="isLoading">Ver todas</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="list-panel" aria-labelledby="asignaciones-list-title">
+    <div class="panel-heading">
+      <h2 id="asignaciones-list-title">Listado de asignaciones</h2>
+      <span>{{ totalAsignaciones }} registro(s)</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Socio</th>
+            <th>Puesto</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading) {
+            <tr>
+              <td colspan="3" class="empty-cell">Cargando asignaciones...</td>
+            </tr>
+          } @else if (asignaciones.length === 0) {
+            <tr>
+              <td colspan="3" class="empty-cell">No hay asignaciones para mostrar.</td>
+            </tr>
+          } @else {
+            @for (asignacion of asignaciones; track asignacion.id) {
+              <tr>
+                <td>
+                  <strong>{{ asignacion.nombreCompletoSocio }}</strong>
+                  <span>{{ asignacion.codigoSocio }} | DNI: {{ asignacion.dniSocio }}</span>
+                </td>
+                <td>
+                  <strong class="code-cell">{{ asignacion.codigoPuesto }}</strong>
+                </td>
+                <td>{{ asignacion.fechaAsignacion }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="pagination-bar" aria-label="Paginacion de asignaciones">
+        <button class="ghost-button compact" type="button" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 0 || isLoading">
+          Anterior
+        </button>
+        <div class="pagination-pages">
+          @for (page of pageNumbers; track page) {
+            <button
+              class="pagination-page"
+              type="button"
+              [class.active]="page === currentPage"
+              (click)="changePage(page)"
+              [disabled]="isLoading"
+            >
+              {{ page + 1 }}
+            </button>
+          }
+        </div>
+        <button class="ghost-button compact" type="button" (click)="changePage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1 || isLoading">
+          Siguiente
+        </button>
+      </div>
+    }
+  </section>
+</section>

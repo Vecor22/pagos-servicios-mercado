@@ -1,0 +1,43 @@
+<div class="shell">
+  <aside class="sidebar" aria-label="Navegacion principal">
+    <div class="sidebar-brand">
+      <div class="brand-mark" aria-hidden="true">MP</div>
+      <div>
+        <strong>Mercado</strong>
+        <span>Pagos y servicios</span>
+      </div>
+    </div>
+
+    <nav class="nav-list">
+      @for (item of navItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="nav-link"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <span class="nav-marker" aria-hidden="true">{{ item.marker }}</span>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <div class="workspace">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">Panel administrativo</span>
+        <strong>{{ session?.fullName || session?.username || 'Administrador' }}</strong>
+      </div>
+
+      <button class="ghost-button" type="button" (click)="logout()">
+        <span aria-hidden="true">x</span>
+        Salir
+      </button>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

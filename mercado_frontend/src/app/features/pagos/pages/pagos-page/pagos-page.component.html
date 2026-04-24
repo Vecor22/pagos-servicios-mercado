@@ -1,0 +1,324 @@
+<section class="pagos-page">
+  <header class="page-header">
+    <div>
+      <span class="section-label">Modulo financiero</span>
+      <h1 class="page-title">Pagos</h1>
+      <p class="muted">Registra pagos, consulta operaciones y anula pagos cuando corresponda.</p>
+    </div>
+  </header>
+
+  @if (successMessage) {
+    <div class="alert alert-success" role="status">{{ successMessage }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error" role="alert">{{ errorMessage }}</div>
+  }
+
+  <div class="top-grid">
+    <section class="form-panel" aria-labelledby="pago-form-title">
+      <div class="panel-heading">
+        <h2 id="pago-form-title">Registrar pago</h2>
+        <span>El monto pagado debe coincidir con el monto pendiente de la deuda.</span>
+      </div>
+
+      <form [formGroup]="pagoForm" (ngSubmit)="registrar()" class="pago-form" novalidate>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="codigoDeuda">Codigo deuda</label>
+            <input id="codigoDeuda" type="text" formControlName="codigoDeuda" maxlength="20" placeholder="DEUDA-000001">
+            <span class="field-error">
+              @if (hasPagoError('codigoDeuda') || fieldErrors['codigoDeuda']) {
+                {{ getFieldMessage('codigoDeuda') }}
+              }
+            </span>
+          </div>
+
+          <div class="form-field">
+            <label for="montoPagado">Monto pagado</label>
+            <input id="montoPagado" type="number" formControlName="montoPagado" min="0.01" step="0.01">
+            <span class="field-error">
+              @if (hasPagoError('montoPagado') || fieldErrors['montoPagado']) {
+                {{ getFieldMessage('montoPagado') }}
+              }
+            </span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="medioPago">Medio de pago</label>
+            <input id="medioPago" type="text" formControlName="medioPago" maxlength="30" placeholder="EFECTIVO">
+            <span class="field-error">
+              @if (hasPagoError('medioPago') || fieldErrors['medioPago']) {
+                {{ getFieldMessage('medioPago') }}
+              }
+            </span>
+          </div>
+
+          <div class="form-field">
+            <label for="numeroOperacion">Nro. operacion</label>
+            <input id="numeroOperacion" type="text" formControlName="numeroOperacion" maxlength="50">
+            <span class="field-error">
+              @if (hasPagoError('numeroOperacion') || fieldErrors['numeroOperacion']) {
+                {{ getFieldMessage('numeroOperacion') }}
+              }
+            </span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="primary-button" type="submit" [disabled]="isSaving">
+            {{ isSaving ? 'Registrando...' : 'Registrar pago' }}
+          </button>
+          <button class="ghost-button" type="button" (click)="resetPagoForm()" [disabled]="isSaving">Limpiar</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="filters-panel" aria-labelledby="filters-title">
+      <div class="panel-heading">
+        <h2 id="filters-title">Filtros</h2>
+        <span>Las fechas se envian al backend como dd-MM-yyyy.</span>
+      </div>
+
+      <form [formGroup]="filtrosForm" class="filters-form" novalidate>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="filterCodigoPago">Codigo pago</label>
+            <input id="filterCodigoPago" type="text" formControlName="codigoPago" placeholder="PAGO-000001">
+          </div>
+          <div class="form-field">
+            <label for="filterCodigoDeuda">Codigo deuda</label>
+            <input id="filterCodigoDeuda" type="text" formControlName="codigoDeuda" placeholder="DEUDA-000001">
+          </div>
+        </div>
+
+        <div class="filter-line dates">
+          <div class="form-field">
+            <label for="filterInicio">Inicio</label>
+            <input id="filterInicio" type="date" formControlName="inicio">
+          </div>
+          <div class="form-field">
+            <label for="filterFin">Fin</label>
+            <input id="filterFin" type="date" formControlName="fin">
+          </div>
+          <button class="primary-button" type="button" (click)="filtrar()" [disabled]="isLoading">
+            Filtrar
+          </button>
+        </div>
+
+        <div class="form-actions">
+          <button class="ghost-button" type="button" (click)="clearFilters()" [disabled]="isLoading">Ver todos</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <section class="list-panel" aria-labelledby="pagos-list-title">
+    <div class="panel-heading">
+      <div>
+        <h2 id="pagos-list-title">Listado de pagos</h2>
+        <span>{{ totalPagos }} registro(s)</span>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Codigo</th>
+            <th>Deuda</th>
+            <th>Monto</th>
+            <th>Medio</th>
+            <th>Operacion</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading) {
+            <tr>
+              <td colspan="8" class="empty-cell">Cargando pagos...</td>
+            </tr>
+          } @else if (pagos.length === 0) {
+            <tr>
+              <td colspan="8" class="empty-cell">No hay pagos para mostrar.</td>
+            </tr>
+          } @else {
+            @for (pago of pagos; track pago.id) {
+              <tr>
+                <td>
+                  <strong class="code-cell">{{ pago.codigoPago }}</strong>
+                </td>
+                <td>
+                  <strong>{{ pago.codigoDeuda }}</strong>
+                </td>
+                <td class="amount-cell">{{ formatMoney(pago.montoPagado) }}</td>
+                <td>{{ pago.medioPago }}</td>
+                <td>{{ pago.numeroOperacion || 'Sin numero' }}</td>
+                <td>{{ pago.fechaPago | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <span class="status-badge" [class.anulado]="pago.estado === 'ANULADO'">{{ pago.estado }}</span>
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <button class="ghost-button compact" type="button" (click)="openDetail(pago)">Ver detalle</button>
+                  </div>
+                  <div class="row-actions">
+                    <button class="ghost-button compact" type="button" (click)="openComprobante(pago)">Ver comprobante</button>
+                  </div>
+                  <div class="row-actions">
+                  <button
+                    class="ghost-button compact"
+                    type="button"
+                    (click)="openAnular(pago)"
+                    [disabled]="pago.estado === 'ANULADO'"
+                  >
+                    Anular
+                  </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="pagination">
+        <button class="ghost-button compact" type="button" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 0 || isLoading">
+          Anterior
+        </button>
+        @for (page of pageNumbers; track page) {
+          <button
+            class="ghost-button compact"
+            type="button"
+            (click)="changePage(page)"
+            [disabled]="page === currentPage || isLoading"
+            [class.active-page]="page === currentPage"
+          >
+            {{ page + 1 }}
+          </button>
+        }
+        <button
+          class="ghost-button compact"
+          type="button"
+          (click)="changePage(currentPage + 1)"
+          [disabled]="currentPage >= totalPages - 1 || isLoading"
+        >
+          Siguiente
+        </button>
+      </div>
+    }
+  </section>
+
+  @if (selectedDetailPago) {
+    <div class="modal-backdrop" role="presentation" (click)="closeDetail()">
+      <section class="modal-panel" aria-labelledby="detail-title" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="panel-heading modal-heading">
+          <div>
+            <h2 id="detail-title">Detalle de pago</h2>
+            <span>{{ selectedDetailPago.codigoPago }}</span>
+          </div>
+          <button class="ghost-button compact" type="button" (click)="closeDetail()">Cerrar</button>
+        </div>
+
+        <div class="detail-list">
+          <div class="detail-row"><strong>Codigo de pago:</strong><span>{{ selectedDetailPago.codigoPago }}</span></div>
+          <div class="detail-row"><strong>Codigo de deuda:</strong><span>{{ selectedDetailPago.codigoDeuda }}</span></div>
+          <div class="detail-row"><strong>Codigo de puesto:</strong><span>{{ selectedDetailPago.codigoPuesto || 'Sin puesto' }}</span></div>
+          <div class="detail-row"><strong>Socio asignado:</strong><span>{{ selectedDetailPago.nombreCompletoSocio || 'Sin socio asociado' }}</span></div>
+          <div class="detail-row"><strong>Monto pagado:</strong><span>{{ formatMoney(selectedDetailPago.montoPagado) }}</span></div>
+          <div class="detail-row"><strong>Medio de pago:</strong><span>{{ selectedDetailPago.medioPago }}</span></div>
+          <div class="detail-row"><strong>Nro. de operacion:</strong><span>{{ selectedDetailPago.numeroOperacion || 'Sin numero' }}</span></div>
+          <div class="detail-row"><strong>Fecha de pago:</strong><span>{{ selectedDetailPago.fechaPago | date: 'dd/MM/yyyy HH:mm' }}</span></div>
+          <div class="detail-row"><strong>Estado:</strong><span>{{ selectedDetailPago.estado }}</span></div>
+          <div class="detail-row"><strong>Registrado por:</strong><span>{{ selectedDetailPago.registradoPorUsername || 'No disponible' }}</span></div>
+          <div class="detail-row"><strong>Anulado por:</strong><span>{{ selectedDetailPago.anuladoPorUsername || 'No aplica' }}</span></div>
+          <div class="detail-row"><strong>Fecha de anulacion:</strong><span>{{ selectedDetailPago.fechaAnulacion ? (selectedDetailPago.fechaAnulacion | date: 'dd/MM/yyyy HH:mm') : 'No aplica' }}</span></div>
+          <div class="detail-row"><strong>Motivo de anulacion:</strong><span>{{ selectedDetailPago.motivoAnulacion || 'No aplica' }}</span></div>
+        </div>
+      </section>
+    </div>
+  }
+
+  @if (selectedPago) {
+    <div class="modal-backdrop" role="presentation" (click)="cancelAnular()">
+      <section class="modal-panel" aria-labelledby="anular-title" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="panel-heading modal-heading">
+          <div>
+            <h2 id="anular-title">Anular pago</h2>
+            <span>{{ selectedPago.codigoPago }}</span>
+          </div>
+          <button class="ghost-button compact" type="button" (click)="cancelAnular()" [disabled]="isCancelling">Cerrar</button>
+        </div>
+
+        <form [formGroup]="anularForm" (ngSubmit)="anular()" class="detail-list" novalidate>
+          <div class="detail-row">
+            <strong>Pago:</strong>
+            <span>{{ selectedPago.codigoPago }}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Deuda:</strong>
+            <span>{{ selectedPago.codigoDeuda }}</span>
+          </div>
+          <div class="form-field">
+            <label for="motivo">Motivo de anulacion</label>
+            <input id="motivo" type="text" formControlName="motivo" maxlength="255">
+            <span class="field-error">
+              @if (anularForm.controls.motivo.invalid && (anularForm.controls.motivo.dirty || anularForm.controls.motivo.touched)) {
+                El motivo es obligatorio.
+              }
+            </span>
+          </div>
+
+          <div class="form-actions">
+            <button class="primary-button" type="submit" [disabled]="isCancelling">
+              {{ isCancelling ? 'Anulando...' : 'Confirmar anulacion' }}
+            </button>
+            <button class="ghost-button" type="button" (click)="cancelAnular()" [disabled]="isCancelling">Cancelar</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  }
+
+  @if (selectedComprobante || isLoadingComprobante) {
+    <div class="modal-backdrop" role="presentation" (click)="closeComprobante()">
+      <section class="modal-panel" aria-labelledby="receipt-title" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="panel-heading modal-heading">
+          <div>
+            <h2 id="receipt-title">Comprobante</h2>
+            <span>
+              @if (selectedComprobante) {
+                {{ selectedComprobante.numeroComprobante }}
+              } @else {
+                Cargando comprobante...
+              }
+            </span>
+          </div>
+          <button class="ghost-button compact" type="button" (click)="closeComprobante()">Cerrar</button>
+        </div>
+
+        @if (isLoadingComprobante) {
+          <div class="detail-list">
+            <div class="detail-row"><span>Cargando comprobante...</span></div>
+          </div>
+        } @else if (selectedComprobante) {
+          <div class="detail-list">
+            <div class="detail-row"><strong>Numero de comprobante:</strong><span>{{ selectedComprobante.numeroComprobante }}</span></div>
+            <div class="detail-row"><strong>Tipo de comprobante:</strong><span>{{ selectedComprobante.tipoComprobante }}</span></div>
+            <div class="detail-row"><strong>Codigo de puesto:</strong><span>{{ selectedComprobante.codigoPuesto || 'No asociado' }}</span></div>
+            <div class="detail-row"><strong>DNI del socio:</strong><span>{{ selectedComprobante.dniSocio || 'No asociado' }}</span></div>
+            <div class="detail-row"><strong>Socio:</strong><span>{{ selectedComprobante.nombreCompletoSocio || 'No asociado' }}</span></div>
+            <div class="detail-row"><strong>Fecha de emision:</strong><span>{{ selectedComprobante.fechaEmision | date: 'dd/MM/yyyy HH:mm' }}</span></div>
+            <div class="detail-row"><strong>Estado:</strong><span>{{ selectedComprobante.estado }}</span></div>
+          </div>
+        }
+      </section>
+    </div>
+  }
+</section>
