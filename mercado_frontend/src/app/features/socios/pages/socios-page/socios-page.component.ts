@@ -42,6 +42,9 @@ export class SociosPageComponent implements OnInit {
   errorMessage = '';
   fieldErrors: Record<string, string> = {};
 
+  // --- NUEVA VARIABLE PARA CONTROLAR EL PANEL ---
+  mostrarPanelFormulario = false;
+
   ngOnInit(): void {
     this.loadSocios();
   }
@@ -148,6 +151,8 @@ export class SociosPageComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.successMessage = this.isEditing ? 'Socio actualizado correctamente.' : 'Socio creado correctamente.';
+        // Ocultamos el panel después de guardar con éxito
+        this.mostrarPanelFormulario = false;
         this.resetForm();
         this.refreshAfterChange();
       },
@@ -174,6 +179,8 @@ export class SociosPageComponent implements OnInit {
           correo: detail.correo ?? '',
           estado: detail.estado
         });
+        // Abrimos el panel al editar
+        this.mostrarPanelFormulario = true;
       },
       error: (error) => this.handleError(error, 'No se pudo obtener el socio seleccionado.')
     });
@@ -208,6 +215,15 @@ export class SociosPageComponent implements OnInit {
       correo: '',
       estado: 'ACTIVO'
     });
+    // Al resetear (botón Nuevo Socio), abrimos el panel
+    this.mostrarPanelFormulario = true;
+  }
+
+  // --- NUEVO MÉTODO PARA CANCELAR ---
+  cancelar(): void {
+    this.mostrarPanelFormulario = false;
+    this.selectedSocioId = null;
+    this.socioForm.reset();
   }
 
   hasControlError(controlName: keyof SocioRequestDTO): boolean {
