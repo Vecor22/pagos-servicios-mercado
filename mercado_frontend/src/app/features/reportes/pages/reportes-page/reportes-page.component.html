@@ -1,0 +1,188 @@
+<section class="reportes-page">
+  <header class="page-header">
+    <div>
+      <span class="section-label">Modulo analitico</span>
+      <h1 class="page-title">Reportes</h1>
+      <p class="muted">Consulta resumenes financieros y de deuda para control administrativo.</p>
+    </div>
+  </header>
+
+  @if (successMessage) {
+    <div class="alert alert-success" role="status">{{ successMessage }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error" role="alert">{{ errorMessage }}</div>
+  }
+
+  <section class="report-section" aria-labelledby="flujo-title">
+    <div class="panel-heading">
+      <h2 id="flujo-title">Resumen de flujo de caja</h2>
+      <span>Ingresos registrados por pagos en el periodo seleccionado.</span>
+    </div>
+
+    <div class="query-grid">
+      <form [formGroup]="flujoDiaForm" (ngSubmit)="consultarFlujoDia()" class="query-card" novalidate>
+        <h3>Por dia</h3>
+        <div class="form-field">
+          <label for="flujoDia">Fecha</label>
+          <input id="flujoDia" type="date" formControlName="fecha">
+        </div>
+        <button class="primary-button" type="submit" [disabled]="isLoadingFlujo">
+          {{ isLoadingFlujo ? 'Consultando...' : 'Consultar' }}
+        </button>
+      </form>
+
+      <form [formGroup]="flujoMesForm" (ngSubmit)="consultarFlujoMes()" class="query-card" novalidate>
+        <h3>Por mes</h3>
+        <div class="inline-fields">
+          <div class="form-field">
+            <label for="flujoMesAnio">Anio</label>
+            <input id="flujoMesAnio" type="number" formControlName="anio" min="2000">
+          </div>
+          <div class="form-field">
+            <label for="flujoMes">Mes</label>
+            <input id="flujoMes" type="number" formControlName="mes" min="1" max="12">
+          </div>
+        </div>
+        <button class="primary-button" type="submit" [disabled]="isLoadingFlujo">
+          {{ isLoadingFlujo ? 'Consultando...' : 'Consultar' }}
+        </button>
+      </form>
+
+      <form [formGroup]="flujoAnioForm" (ngSubmit)="consultarFlujoAnio()" class="query-card" novalidate>
+        <h3>Por anio</h3>
+        <div class="form-field">
+          <label for="flujoAnio">Anio</label>
+          <input id="flujoAnio" type="number" formControlName="anio" min="2000">
+        </div>
+        <button class="primary-button" type="submit" [disabled]="isLoadingFlujo">
+          {{ isLoadingFlujo ? 'Consultando...' : 'Consultar' }}
+        </button>
+      </form>
+
+      <form [formGroup]="flujoRangoForm" (ngSubmit)="consultarFlujoRango()" class="query-card wide" novalidate>
+        <h3>Por rango de fechas</h3>
+        <div class="inline-fields">
+          <div class="form-field">
+            <label for="flujoInicio">Inicio</label>
+            <input id="flujoInicio" type="date" formControlName="inicio">
+          </div>
+          <div class="form-field">
+            <label for="flujoFin">Fin</label>
+            <input id="flujoFin" type="date" formControlName="fin">
+          </div>
+        </div>
+        <button class="primary-button" type="submit" [disabled]="isLoadingFlujo">
+          {{ isLoadingFlujo ? 'Consultando...' : 'Consultar' }}
+        </button>
+      </form>
+    </div>
+
+    @if (flujoCaja) {
+      <div class="result-block">
+        <div class="result-title">
+          <h3>{{ flujoTitulo }}</h3>
+          <span>{{ flujoCaja.inicio | date: 'dd/MM/yyyy HH:mm' }} - {{ flujoCaja.fin | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="summary-cards two">
+          <article class="summary-card">
+            <span>Total ingresos</span>
+            <strong>{{ formatMoney(flujoCaja.totalIngresos) }}</strong>
+          </article>
+          <article class="summary-card">
+            <span>Cantidad de pagos</span>
+            <strong>{{ flujoCaja.cantidadPagos }}</strong>
+          </article>
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="report-section" aria-labelledby="deudas-title">
+    <div class="panel-heading">
+      <h2 id="deudas-title">Resumen de deudas</h2>
+      <span>Montos y cantidades por estado de deuda dentro del rango consultado.</span>
+    </div>
+
+    <form [formGroup]="deudasRangoForm" (ngSubmit)="consultarDeudasRango()" class="debt-query" novalidate>
+      <div class="form-field">
+        <label for="deudaInicio">Inicio</label>
+        <input id="deudaInicio" type="date" formControlName="inicio">
+      </div>
+      <div class="form-field">
+        <label for="deudaFin">Fin</label>
+        <input id="deudaFin" type="date" formControlName="fin">
+      </div>
+      <button class="primary-button" type="submit" [disabled]="isLoadingDeudas">
+        {{ isLoadingDeudas ? 'Consultando...' : 'Consultar deudas' }}
+      </button>
+    </form>
+
+    @if (resumenDeudas) {
+      <div class="result-block">
+        <div class="result-title">
+          <h3>{{ deudasTitulo }}</h3>
+          <span>{{ resumenDeudas.inicio | date: 'dd/MM/yyyy HH:mm' }} - {{ resumenDeudas.fin | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+
+        <div class="summary-cards">
+          <article class="summary-card">
+            <span>Total pagables</span>
+            <strong>{{ resumenDeudas.cantidadTotalPagables }}</strong>
+            <small>{{ formatMoney(resumenDeudas.montoTotalPagables) }}</small>
+          </article>
+          <article class="summary-card">
+            <span>Total pagadas</span>
+            <strong>{{ resumenDeudas.cantidadPagadas }}</strong>
+            <small>{{ formatMoney(resumenDeudas.montoTotalPagadas) }}</small>
+          </article>
+          <article class="summary-card">
+            <span>Total pendientes</span>
+            <strong>{{ resumenDeudas.cantidadPendientes }}</strong>
+            <small>{{ formatMoney(resumenDeudas.montoTotalPendientes) }}</small>
+          </article>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Estado</th>
+                <th>Cantidad</th>
+                <th>Porcentaje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Distribuidas</td>
+                <td>{{ resumenDeudas.cantidadDistribuidas }}</td>
+                <td>No aplica</td>
+              </tr>
+              <tr>
+                <td>Exoneradas</td>
+                <td>{{ resumenDeudas.cantidadExoneradas }}</td>
+                <td>No aplica</td>
+              </tr>
+              <tr>
+                <td>Pendientes</td>
+                <td>{{ resumenDeudas.cantidadPendientes }}</td>
+                <td>{{ formatPercent(resumenDeudas.porcentajePendientes) }}</td>
+              </tr>
+              <tr>
+                <td>Pagadas</td>
+                <td>{{ resumenDeudas.cantidadPagadas }}</td>
+                <td>{{ formatPercent(resumenDeudas.porcentajePagadas) }}</td>
+              </tr>
+              <tr>
+                <td>Total pagables</td>
+                <td>{{ resumenDeudas.cantidadTotalPagables }}</td>
+                <td>100.00%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </section>
+</section>

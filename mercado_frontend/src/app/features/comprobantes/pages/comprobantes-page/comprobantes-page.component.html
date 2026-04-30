@@ -1,0 +1,106 @@
+<section class="comprobantes-page">
+  <header class="page-header no-print">
+    <div>
+      <span class="section-label">Modulo documental</span>
+      <h1 class="page-title">Comprobantes</h1>
+      <p class="muted">Consulta el comprobante generado automaticamente para un pago registrado.</p>
+    </div>
+  </header>
+
+  @if (successMessage) {
+    <div class="alert alert-success no-print" role="status">{{ successMessage }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error no-print" role="alert">{{ errorMessage }}</div>
+  }
+
+  <section class="search-panel no-print" aria-labelledby="search-title">
+    <div class="panel-heading">
+      <h2 id="search-title">Buscar comprobante</h2>
+      <span>Ingresa el ID del pago asociado.</span>
+    </div>
+
+    <form [formGroup]="searchForm" (ngSubmit)="buscar()" class="search-form" novalidate>
+      <div class="form-field">
+        <label for="idPago">ID pago</label>
+        <input id="idPago" type="number" formControlName="idPago" min="1" placeholder="Ej. 1">
+        <span class="field-error">
+          @if (hasSearchError()) {
+            Debe ser un ID numerico mayor a cero.
+          }
+        </span>
+      </div>
+
+      <div class="form-actions">
+        <button class="primary-button" type="submit" [disabled]="isLoading">
+          {{ isLoading ? 'Buscando...' : 'Buscar' }}
+        </button>
+        <button class="ghost-button" type="button" (click)="limpiar()" [disabled]="isLoading">Limpiar</button>
+      </div>
+    </form>
+  </section>
+
+  @if (comprobante) {
+    <section class="receipt-shell" aria-labelledby="receipt-title">
+      <div class="receipt-actions no-print">
+        <button class="primary-button" type="button" (click)="imprimir()">
+          <span aria-hidden="true">[]</span>
+          Imprimir
+        </button>
+      </div>
+
+      <article class="receipt">
+        <header class="receipt-header">
+          <div>
+            <span class="receipt-kicker">Mercado Municipal</span>
+            <h2 id="receipt-title">{{ comprobante.tipoComprobante }}</h2>
+          </div>
+          <div class="receipt-number">
+            <span>Nro.</span>
+            <strong>{{ comprobante.numeroComprobante }}</strong>
+          </div>
+        </header>
+
+        <div class="status-row">
+          <span class="status-badge" [class.anulado]="comprobante.estado === 'ANULADO'">{{ comprobante.estado }}</span>
+          <span>Emitido: {{ comprobante.fechaEmision | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+
+        <div class="receipt-grid">
+          <div class="receipt-field">
+            <span>ID comprobante</span>
+            <strong>#{{ comprobante.id }}</strong>
+          </div>
+          <div class="receipt-field">
+            <span>ID pago</span>
+            <strong>#{{ comprobante.idPago }}</strong>
+          </div>
+          <div class="receipt-field">
+            <span>Puesto</span>
+            <strong>{{ comprobante.codigoPuesto || 'No asociado' }}</strong>
+          </div>
+          <div class="receipt-field">
+            <span>DNI socio</span>
+            <strong>{{ comprobante.dniSocio || 'No asociado' }}</strong>
+          </div>
+        </div>
+
+        <section class="person-block">
+          <span>Socio</span>
+          <strong>{{ comprobante.nombreCompletoSocio || 'No asociado' }}</strong>
+        </section>
+
+        <footer class="receipt-footer">
+          <span>Documento generado por el sistema de gestion de pagos.</span>
+          <span>Conservar para control administrativo.</span>
+        </footer>
+      </article>
+    </section>
+  } @else {
+    <section class="empty-panel no-print">
+      <strong>Sin comprobante seleccionado</strong>
+      <span>Realiza una busqueda por ID de pago para ver el comprobante.</span>
+    </section>
+  }
+</section>

@@ -1,0 +1,215 @@
+<section class="socios-page">
+  <header class="page-header">
+    <div>
+      <span class="section-label">Modulo administrativo</span>
+      <h1 class="page-title">Socios</h1>
+      <p class="muted">Registro y mantenimiento de socios del mercado.</p>
+    </div>
+    <button class="primary-button" type="button" (click)="resetForm()">
+      <span aria-hidden="true">+</span>
+      Nuevo socio
+    </button>
+  </header>
+
+  @if (successMessage) {
+  <div class="alert alert-success" role="status">{{ successMessage }}</div>
+  }
+
+  @if (errorMessage) {
+  <div class="alert alert-error" role="alert">{{ errorMessage }}</div>
+  }
+
+  <div class="socios-grid" [style.grid-template-columns]="mostrarPanelFormulario ? '2fr 1fr' : '1fr'">
+
+    <section class="list-panel" aria-labelledby="socios-list-title">
+      <div class="panel-heading">
+        <div>
+          <h2 id="socios-list-title">Listado de socios</h2>
+          <span>{{ totalSocios }} registro(s)</span>
+        </div>
+      </div>
+
+      <form [formGroup]="searchForm" (ngSubmit)="search()" class="search-row">
+        <div class="form-field search-field">
+          <label for="searchTerm">Buscar por nombre o DNI</label>
+          <input
+            id="searchTerm"
+            type="search"
+            formControlName="termino"
+            placeholder="Nombres, apellidos o DNI"
+          >
+        </div>
+        <button class="primary-button" type="submit" [disabled]="isLoading">Buscar</button>
+        <button class="ghost-button" type="button" (click)="clearSearch()" [disabled]="isLoading">Limpiar</button>
+      </form>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+          <tr>
+            <th>Codigo</th>
+            <th>Socio</th>
+            <th>DNI</th>
+            <th>Telefono</th>
+            <th>Estado</th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          @if (isLoading) {
+          <tr>
+            <td colspan="6" class="empty-cell">Cargando socios...</td>
+          </tr>
+          } @else if (socios.length === 0) {
+          <tr>
+            <td colspan="6" class="empty-cell">No hay socios para mostrar.</td>
+          </tr>
+          } @else {
+          @for (socio of socios; track socio.id) {
+          <tr>
+            <td class="code-cell">{{ socio.codigoSocio }}</td>
+            <td>
+              <strong>{{ socio.nombres }} {{ socio.apellidos }}</strong>
+              <span>{{ socio.correo || 'Sin correo' }}</span>
+            </td>
+            <td>{{ socio.dni }}</td>
+            <td>{{ socio.telefono }}</td>
+            <td>
+                    <span class="status-badge" [class.inactive]="socio.estado === 'INACTIVO'">
+                      {{ socio.estado }}
+                    </span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="ghost-button compact" type="button" (click)="edit(socio)" [disabled]="isLoading">
+                  Editar
+                </button>
+                <button
+                  class="ghost-button compact"
+                  type="button"
+                  (click)="toggleEstado(socio)"
+                  [disabled]="isChangingState"
+                >
+                  {{ socio.estado === 'ACTIVO' ? 'Inactivar' : 'Activar' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+          }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages > 1) {
+      <div class="pagination-bar" aria-label="Paginacion de socios">
+        <button class="ghost-button compact" type="button" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 0 || isLoading">
+          Anterior
+        </button>
+        <div class="pagination-pages">
+          @for (page of pageNumbers; track page) {
+          <button
+            class="pagination-page"
+            type="button"
+            [class.active]="page === currentPage"
+            (click)="changePage(page)"
+            [disabled]="isLoading"
+          >
+            {{ page + 1 }}
+          </button>
+          }
+        </div>
+        <button class="ghost-button compact" type="button" (click)="changePage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1 || isLoading">
+          Siguiente
+        </button>
+      </div>
+      }
+    </section>
+
+    @if (mostrarPanelFormulario) {
+    <section class="form-panel" aria-labelledby="socio-form-title">
+      <div class="panel-heading">
+        <div>
+          <h2 id="socio-form-title">{{ isEditing ? 'Editar socio' : 'Crear socio' }}</h2>
+          <span>{{ isEditing ? 'Actualiza la informacion registrada.' : 'Completa los datos del nuevo socio.' }}</span>
+        </div>
+      </div>
+
+      <form [formGroup]="socioForm" (ngSubmit)="save()" class="socio-form" novalidate>
+        <div class="form-field">
+          <label for="nombres">Nombres</label>
+          <input id="nombres" type="text" formControlName="nombres" maxlength="100">
+          <span class="field-error">
+              @if (hasControlError('nombres') || fieldErrors['nombres']) {
+                {{ getControlMessage('nombres') }}
+              }
+            </span>
+        </div>
+
+        <div class="form-field">
+          <label for="apellidos">Apellidos</label>
+          <input id="apellidos" type="text" formControlName="apellidos" maxlength="100">
+          <span class="field-error">
+              @if (hasControlError('apellidos') || fieldErrors['apellidos']) {
+                {{ getControlMessage('apellidos') }}
+              }
+            </span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="dni">DNI</label>
+            <input id="dni" type="text" formControlName="dni" maxlength="8" inputmode="numeric">
+            <span class="field-error">
+                @if (hasControlError('dni') || fieldErrors['dni']) {
+                  {{ getControlMessage('dni') }}
+                }
+              </span>
+          </div>
+
+          <div class="form-field">
+            <label for="telefono">Telefono</label>
+            <input id="telefono" type="text" formControlName="telefono" maxlength="20">
+            <span class="field-error">
+                @if (hasControlError('telefono') || fieldErrors['telefono']) {
+                  {{ getControlMessage('telefono') }}
+                }
+              </span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="correo">Correo</label>
+          <input id="correo" type="email" formControlName="correo" maxlength="100" placeholder="correo@ejemplo.com">
+          <span class="field-error">
+              @if (hasControlError('correo') || fieldErrors['correo']) {
+                {{ getControlMessage('correo') }}
+              }
+            </span>
+        </div>
+
+        <div class="form-field">
+          <label for="estado">Estado</label>
+          <select id="estado" formControlName="estado">
+            @for (estado of estados; track estado) {
+            <option [value]="estado">{{ estado }}</option>
+            }
+          </select>
+          <span class="field-error">
+              @if (hasControlError('estado') || fieldErrors['estado']) {
+                {{ getControlMessage('estado') }}
+              }
+            </span>
+        </div>
+
+        <div class="form-actions">
+          <button class="primary-button" type="submit" [disabled]="isSaving">
+            {{ isSaving ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+          </button>
+          <button class="ghost-button" type="button" (click)="cancelar()" [disabled]="isSaving">Cancelar</button>
+        </div>
+      </form>
+    </section>
+    }
+  </div>
+</section>

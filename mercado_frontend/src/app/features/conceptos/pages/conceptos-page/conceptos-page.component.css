@@ -1,0 +1,202 @@
+.conceptos-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.page-header,
+.list-panel,
+.form-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.page-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: clamp(1.15rem, 3vw, 1.6rem);
+}
+
+.section-label {
+  color: var(--accent);
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 900;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.page-header p {
+  margin: 0.45rem 0 0;
+}
+
+.alert {
+  border-radius: 8px;
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+}
+
+.alert-success {
+  background: #ecfdf3;
+  border: 1px solid #abefc6;
+  color: #067647;
+}
+
+.alert-error {
+  background: #fff1f0;
+  border: 1px solid #fecdca;
+  color: var(--danger);
+}
+
+.conceptos-grid {
+  align-items: start;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.75fr);
+}
+
+.panel-heading {
+  border-bottom: 1px solid var(--line);
+  padding: 1rem 1.15rem;
+}
+
+.panel-heading h2 {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.panel-heading span {
+  color: var(--muted);
+  display: block;
+  font-size: 0.88rem;
+  margin-top: 0.18rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  min-width: 680px;
+  width: 100%;
+}
+
+th,
+td {
+  border-top: 1px solid var(--line);
+  padding: 0.9rem 1rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background: #f8faf9;
+  color: #475467;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+td strong,
+td span {
+  display: block;
+}
+
+td span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin-top: 0.16rem;
+}
+
+.id-cell {
+  color: var(--muted);
+  font-weight: 800;
+  width: 90px;
+}
+
+.actions-col {
+  width: 120px;
+}
+
+.compact {
+  font-size: 0.86rem;
+  min-height: 36px;
+  padding: 0.45rem 0.65rem;
+}
+
+.type-badge {
+  background: #eef5f1;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--primary-dark);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 900;
+  justify-content: center;
+  min-width: 78px;
+  padding: 0.3rem 0.55rem;
+}
+
+.type-badge.consumo {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+
+.empty-cell {
+  color: var(--muted);
+  font-weight: 700;
+  height: 96px;
+  text-align: center;
+}
+
+.concepto-form {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem 1.15rem 1.15rem;
+}
+
+.form-field select,
+.form-field textarea {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  outline: none;
+  padding: 0.75rem 0.9rem;
+  resize: vertical;
+  width: 100%;
+}
+
+.form-field select {
+  min-height: 44px;
+}
+
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(23, 107, 91, 0.14);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.2rem;
+}
+
+@media (max-width: 1040px) {
+  .conceptos-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
