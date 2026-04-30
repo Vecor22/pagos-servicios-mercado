@@ -1,0 +1,19 @@
+<section class="section-page">
+  <div class="section-heading">
+    <span class="section-label">Modulo</span>
+    <h1 class="page-title">{{ data.title }}</h1>
+    <p class="muted">{{ data.description }}</p>
+  </div>
+
+  <div class="status-panel">
+    <div class="status-icon" aria-hidden="true">API</div>
+    <div>
+      <h2>Base preparada para integracion</h2>
+      <p>
+        Esta seccion ya esta registrada en la navegacion protegida. En la siguiente etapa se conectara con
+        <strong>{{ data.endpoint }}</strong>
+        usando el token JWT enviado por el interceptor.
+      </p>
+    </div>
+  </div>
+</section>

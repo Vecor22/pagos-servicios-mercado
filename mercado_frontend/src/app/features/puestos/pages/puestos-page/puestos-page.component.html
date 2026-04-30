@@ -1,0 +1,88 @@
+<section class="puestos-page">
+  <header class="page-header">
+    <div>
+      <span class="section-label">Modulo administrativo</span>
+      <h1 class="page-title">Puestos</h1>
+      <p class="muted">Creacion y consulta de puestos comerciales del mercado.</p>
+    </div>
+    <button class="primary-button" type="button" (click)="createPuesto()" [disabled]="isCreating">
+      <span aria-hidden="true">+</span>
+      {{ isCreating ? 'Creando...' : 'Crear puesto' }}
+    </button>
+  </header>
+
+  @if (successMessage) {
+    <div class="alert alert-success" role="status">{{ successMessage }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error" role="alert">{{ errorMessage }}</div>
+  }
+
+  <section class="list-panel" aria-labelledby="puestos-list-title">
+    <div class="panel-heading">
+      <div>
+        <h2 id="puestos-list-title">Listado de puestos</h2>
+        <span>{{ totalPuestos }} registro(s)</span>
+      </div>
+      <button class="ghost-button compact" type="button" (click)="toggleSinAsignacion()" [disabled]="isLoading">
+        {{ showOnlySinAsignacion ? 'Ver todos' : 'Sin socio asignado' }}
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Codigo de puesto</th>
+            <th>Estado de gestion</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading) {
+            <tr>
+              <td colspan="2" class="empty-cell">Cargando puestos...</td>
+            </tr>
+          } @else if (puestos.length === 0) {
+            <tr>
+              <td colspan="2" class="empty-cell">No hay puestos para mostrar.</td>
+            </tr>
+          } @else {
+            @for (puesto of puestos; track puesto.id) {
+              <tr>
+                <td class="code-cell">{{ puesto.codigoPuesto }}</td>
+                <td>
+                  <span class="status-badge">{{ showOnlySinAsignacion ? 'Sin asignacion' : 'Registrado' }}</span>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="pagination-bar" aria-label="Paginacion de puestos">
+        <button class="ghost-button compact" type="button" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 0 || isLoading">
+          Anterior
+        </button>
+        <div class="pagination-pages">
+          @for (page of pageNumbers; track page) {
+            <button
+              class="pagination-page"
+              type="button"
+              [class.active]="page === currentPage"
+              (click)="changePage(page)"
+              [disabled]="isLoading"
+            >
+              {{ page + 1 }}
+            </button>
+          }
+        </div>
+        <button class="ghost-button compact" type="button" (click)="changePage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1 || isLoading">
+          Siguiente
+        </button>
+      </div>
+    }
+  </section>
+</section>
