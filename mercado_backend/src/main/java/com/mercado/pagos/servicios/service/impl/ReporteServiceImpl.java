@@ -19,8 +19,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,47 +60,33 @@ public class ReporteServiceImpl implements ReporteService {
     @Override
     public ResumenDeudasResponseDTO obtenerResumenDeudas(LocalDateTime inicio, LocalDateTime fin) {
         List<Deuda> deudas = deudaRepository.findByFechaGeneracionBetween(inicio, fin);
-        Set<Long> idsDeudas = deudas.stream()
-                .map(Deuda::getId)
-                .collect(Collectors.toSet());
-        List<Pago> pagos = pagoRepository.findByEstado(EstadoPago.REGISTRADO).stream()
-                .filter(pago -> idsDeudas.contains(pago.getDeuda().getId()))
-                .toList();
-
-        return construirResumen(inicio, fin, deudas, pagos);
+        return construirResumen(inicio, fin, deudas);
     }
 
     private ResumenDeudasResponseDTO construirResumen(
             LocalDateTime inicio,
             LocalDateTime fin,
-            List<Deuda> deudas,
-            List<Pago> pagosRegistrados
+            List<Deuda> deudas
     ) {
-        List<Deuda> deudasPagables = deudas.stream()
-                .filter(deuda -> deuda.getEstado() != EstadoDeuda.DISTRIBUIDA)
-                .toList();
-
-        BigDecimal totalPagado = sumarDeudasPorEstado(deudasPagables, EstadoDeuda.PAGADA);
-        BigDecimal totalPendiente = sumarDeudasPorEstado(deudasPagables, EstadoDeuda.PENDIENTE);
-        BigDecimal totalExonerado = sumarDeudasPorEstado(deudasPagables, EstadoDeuda.EXONERADA);
-        BigDecimal totalDeuda = totalPagado.add(totalPendiente).add(totalExonerado);
-        BigDecimal totalActualCaja = sumarPagos(pagosRegistrados);
+        BigDecimal montoTotalPagadas = sumarDeudasPorEstado(deudas, EstadoDeuda.PAGADA);
+        BigDecimal montoTotalPendientes = sumarDeudasPorEstado(deudas, EstadoDeuda.PENDIENTE);
+        BigDecimal montoTotalPagables = montoTotalPagadas.add(montoTotalPendientes);
+        Integer cantidadPagadas = contarDeudasPorEstado(deudas, EstadoDeuda.PAGADA);
+        Integer cantidadPendientes = contarDeudasPorEstado(deudas, EstadoDeuda.PENDIENTE);
+        Integer cantidadTotalPagables = cantidadPagadas + cantidadPendientes;
 
         return ResumenDeudasResponseDTO.builder()
                 .inicio(inicio)
                 .fin(fin)
-                .totalDeuda(totalDeuda)
-                .totalPagado(totalPagado)
-                .totalPendiente(totalPendiente)
-                .totalExonerado(totalExonerado)
-                .totalActualCaja(totalActualCaja)
-                .porcentajePagado(calcularPorcentaje(totalPagado, totalDeuda))
-                .porcentajePendiente(calcularPorcentaje(totalPendiente, totalDeuda))
-                .porcentajeExonerado(calcularPorcentaje(totalExonerado, totalDeuda))
-                .cantidadDeudas(deudasPagables.size())
-                .cantidadPagadas(contarDeudasPorEstado(deudasPagables, EstadoDeuda.PAGADA))
-                .cantidadPendientes(contarDeudasPorEstado(deudasPagables, EstadoDeuda.PENDIENTE))
-                .cantidadExoneradas(contarDeudasPorEstado(deudasPagables, EstadoDeuda.EXONERADA))
+                .montoTotalPagables(montoTotalPagables)
+                .montoTotalPagadas(montoTotalPagadas)
+                .montoTotalPendientes(montoTotalPendientes)
+                .porcentajePagadas(calcularPorcentaje(BigDecimal.valueOf(cantidadPagadas), BigDecimal.valueOf(cantidadTotalPagables)))
+                .porcentajePendientes(calcularPorcentaje(BigDecimal.valueOf(cantidadPendientes), BigDecimal.valueOf(cantidadTotalPagables)))
+                .cantidadTotalPagables(cantidadTotalPagables)
+                .cantidadPagadas(cantidadPagadas)
+                .cantidadPendientes(cantidadPendientes)
+                .cantidadExoneradas(contarDeudasPorEstado(deudas, EstadoDeuda.EXONERADA))
                 .cantidadDistribuidas(contarDeudasPorEstado(deudas, EstadoDeuda.DISTRIBUIDA))
                 .build();
     }

@@ -18,15 +18,12 @@ public class ResumenDeudasResponseDTO {
 
     private LocalDateTime inicio;
     private LocalDateTime fin;
-    private BigDecimal totalDeuda;
-    private BigDecimal totalPagado;
-    private BigDecimal totalPendiente;
-    private BigDecimal totalExonerado;
-    private BigDecimal totalActualCaja;
-    private BigDecimal porcentajePagado;
-    private BigDecimal porcentajePendiente;
-    private BigDecimal porcentajeExonerado;
-    private Integer cantidadDeudas;
+    private BigDecimal montoTotalPagables;
+    private BigDecimal montoTotalPagadas;
+    private BigDecimal montoTotalPendientes;
+    private BigDecimal porcentajePagadas;
+    private BigDecimal porcentajePendientes;
+    private Integer cantidadTotalPagables;
     private Integer cantidadPagadas;
     private Integer cantidadPendientes;
     private Integer cantidadExoneradas;

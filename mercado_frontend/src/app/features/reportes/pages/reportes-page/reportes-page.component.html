@@ -128,24 +128,19 @@
 
         <div class="summary-cards">
           <article class="summary-card">
-            <span>Total deuda</span>
-            <strong>{{ formatMoney(resumenDeudas.totalDeuda) }}</strong>
+            <span>Total pagables</span>
+            <strong>{{ resumenDeudas.cantidadTotalPagables }}</strong>
+            <small>{{ formatMoney(resumenDeudas.montoTotalPagables) }}</small>
           </article>
           <article class="summary-card">
-            <span>Total pagado</span>
-            <strong>{{ formatMoney(resumenDeudas.totalPagado) }}</strong>
+            <span>Total pagadas</span>
+            <strong>{{ resumenDeudas.cantidadPagadas }}</strong>
+            <small>{{ formatMoney(resumenDeudas.montoTotalPagadas) }}</small>
           </article>
           <article class="summary-card">
-            <span>Total pendiente</span>
-            <strong>{{ formatMoney(resumenDeudas.totalPendiente) }}</strong>
-          </article>
-          <article class="summary-card">
-            <span>Total exonerado</span>
-            <strong>{{ formatMoney(resumenDeudas.totalExonerado) }}</strong>
-          </article>
-          <article class="summary-card">
-            <span>Caja actual</span>
-            <strong>{{ formatMoney(resumenDeudas.totalActualCaja) }}</strong>
+            <span>Total pendientes</span>
+            <strong>{{ resumenDeudas.cantidadPendientes }}</strong>
+            <small>{{ formatMoney(resumenDeudas.montoTotalPendientes) }}</small>
           </article>
         </div>
 
@@ -160,28 +155,28 @@
             </thead>
             <tbody>
               <tr>
-                <td>Pagadas</td>
-                <td>{{ resumenDeudas.cantidadPagadas }}</td>
-                <td>{{ formatPercent(resumenDeudas.porcentajePagado) }}</td>
-              </tr>
-              <tr>
-                <td>Pendientes</td>
-                <td>{{ resumenDeudas.cantidadPendientes }}</td>
-                <td>{{ formatPercent(resumenDeudas.porcentajePendiente) }}</td>
-              </tr>
-              <tr>
-                <td>Exoneradas</td>
-                <td>{{ resumenDeudas.cantidadExoneradas }}</td>
-                <td>{{ formatPercent(resumenDeudas.porcentajeExonerado) }}</td>
-              </tr>
-              <tr>
                 <td>Distribuidas</td>
                 <td>{{ resumenDeudas.cantidadDistribuidas }}</td>
                 <td>No aplica</td>
               </tr>
               <tr>
+                <td>Exoneradas</td>
+                <td>{{ resumenDeudas.cantidadExoneradas }}</td>
+                <td>No aplica</td>
+              </tr>
+              <tr>
+                <td>Pendientes</td>
+                <td>{{ resumenDeudas.cantidadPendientes }}</td>
+                <td>{{ formatPercent(resumenDeudas.porcentajePendientes) }}</td>
+              </tr>
+              <tr>
+                <td>Pagadas</td>
+                <td>{{ resumenDeudas.cantidadPagadas }}</td>
+                <td>{{ formatPercent(resumenDeudas.porcentajePagadas) }}</td>
+              </tr>
+              <tr>
                 <td>Total pagables</td>
-                <td>{{ resumenDeudas.cantidadDeudas }}</td>
+                <td>{{ resumenDeudas.cantidadTotalPagables }}</td>
                 <td>100.00%</td>
               </tr>
             </tbody>

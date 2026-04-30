@@ -8,15 +8,12 @@ export interface ResumenFlujoCajaResponseDTO {
 export interface ResumenDeudasResponseDTO {
   inicio: string;
   fin: string;
-  totalDeuda: number;
-  totalPagado: number;
-  totalPendiente: number;
-  totalExonerado: number;
-  totalActualCaja: number;
-  porcentajePagado: number;
-  porcentajePendiente: number;
-  porcentajeExonerado: number;
-  cantidadDeudas: number;
+  montoTotalPagables: number;
+  montoTotalPagadas: number;
+  montoTotalPendientes: number;
+  porcentajePagadas: number;
+  porcentajePendientes: number;
+  cantidadTotalPagables: number;
   cantidadPagadas: number;
   cantidadPendientes: number;
   cantidadExoneradas: number;
